@@ -1,0 +1,9 @@
+@if (hasData()) {
+  <div [innerHTML]="html()"></div>
+} @else {
+  <div class="empty-state">
+    <h1>🏛️ No event published yet</h1>
+    <p>Go to the Event Builder and hit "Publish Event" to make your page live.</p>
+    <a href="/admin/eventbuilder" class="empty-btn">Open Event Builder</a>
+  </div>
+}

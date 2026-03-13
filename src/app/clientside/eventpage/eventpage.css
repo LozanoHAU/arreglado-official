@@ -1,0 +1,5 @@
+.empty-state { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: #0c0c10; color: #555; text-align: center; padding: 40px; }
+.empty-state h1 { font-family: 'Syne', sans-serif; font-size: 2rem; color: #ddd; }
+.empty-state p { font-size: .92rem; max-width: 380px; line-height: 1.7; }
+.empty-btn { margin-top: 8px; padding: 12px 28px; background: #7c6aff; color: #fff; border: none; border-radius: 8px; font-size: .88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .18s; text-decoration: none; }
+.empty-btn:hover { filter: brightness(1.15); }

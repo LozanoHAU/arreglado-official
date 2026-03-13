@@ -1,0 +1,234 @@
+<div class="shell">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a class="logo" routerLink="/admin/dashboard">
+    <div class="logo-mark">AR</div>
+    Arreglado
+    <span class="logo-sub">Event Calendar</span>
+  </a>
+  <div class="topbar-right">
+    <a routerLink="/admin/dashboard" class="btn btn-outline">← Dashboard</a>
+    <a routerLink="/admin/eventbuilder" class="btn btn-outline">Event Builder</a>
+    <button class="btn btn-accent" (click)="openAddModal(null)">+ New Event</button>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-inner">
+
+    <!-- Mini Calendar -->
+    <div class="sb-section">
+      <div class="sb-label">Navigate</div>
+      <div class="mini-cal">
+        <div class="mini-cal-nav">
+          <button class="mini-nav-btn" (click)="miniPrev()">‹</button>
+          <span class="mini-month-label">{{ miniLabel() }}</span>
+          <button class="mini-nav-btn" (click)="miniNext()">›</button>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-dow">S</div><div class="mini-dow">M</div><div class="mini-dow">T</div>
+          <div class="mini-dow">W</div><div class="mini-dow">T</div><div class="mini-dow">F</div>
+          <div class="mini-dow">S</div>
+          @for (d of miniDays(); track $index) {
+            <div
+              class="mini-day"
+              [class.other-month]="d.otherMonth"
+              [class.today]="d.isToday"
+              [class.has-event]="d.hasEvent"
+              (click)="d.day && miniJump(d.day)">
+              {{ d.day || '' }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="sb-section">
+      <div class="sb-label">Event Types</div>
+      <div class="legend-item"><div class="legend-dot ev-blue-bg"></div>Multi-day Event</div>
+      <div class="legend-item"><div class="legend-dot ev-red-bg"></div>Single Day Event</div>
+      <div class="legend-item"><div class="legend-dot ev-green-bg"></div>Health / Vaccination</div>
+      <div class="legend-item"><div class="legend-dot ev-gold-bg"></div>Community Activity</div>
+      <div class="legend-item"><div class="legend-dot ev-purple-bg"></div>Meeting / Forum</div>
+    </div>
+
+    <!-- Upcoming -->
+    <div class="sb-section">
+      <div class="sb-label">Upcoming</div>
+      <div id="upcoming-list">
+        @for (ev of upcoming(); track ev.id) {
+          <div class="upcoming-item" (click)="showPanel(ev)">
+            <div class="upcoming-bar" [style.background]="COLOR_HEX[ev.color]"></div>
+            <div class="upcoming-date-box">
+              <div class="upcoming-month">{{ upcomingMonthStr(ev) }}</div>
+              <div class="upcoming-day-num">{{ upcomingDayNum(ev) }}</div>
+            </div>
+            <div class="upcoming-info">
+              <div class="upcoming-name">{{ ev.title }}</div>
+              <div class="upcoming-meta">{{ ev.loc || 'Barangay' }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- Calendar Nav -->
+  <div class="cal-nav">
+    <div class="cal-nav-center">
+      <button class="nav-btn" (click)="prevMonth()">‹</button>
+      <div class="cal-month-label">{{ calLabel() }}</div>
+      <button class="nav-btn" (click)="nextMonth()">›</button>
+    </div>
+    <div class="cal-nav-right">
+      <button class="today-btn" (click)="goToday()">Today</button>
+    </div>
+  </div>
+
+  <!-- Day-of-week header -->
+  <div class="dow-header">
+    <div class="dow-cell weekend">Sun</div>
+    <div class="dow-cell">Mon</div>
+    <div class="dow-cell">Tue</div>
+    <div class="dow-cell">Wed</div>
+    <div class="dow-cell">Thu</div>
+    <div class="dow-cell">Fri</div>
+    <div class="dow-cell weekend">Sat</div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="cal-wrap">
+    <div class="cal-grid">
+      @for (cell of grid(); track $index) {
+        <div
+          class="day-cell"
+          [class.other-month]="cell.otherMonth"
+          [class.today]="cell.isToday"
+          [class.weekend-cell]="cell.isWeekend"
+          (click)="openAddModal(toStr(cell.date))">
+          <div class="day-num-wrap">
+            <span class="day-num">{{ cell.date.getDate() }}</span>
+            <button class="day-add-btn" (click)="$event.stopPropagation(); openAddModal(toStr(cell.date))">+</button>
+          </div>
+          <div class="day-events">
+            @for (item of cell.events; track item.ev.id) {
+              <div class="ev {{ item.cls }}" (click)="$event.stopPropagation(); showPanel(item.ev)">
+                {{ item.ev.title }}
+              </div>
+            }
+            @if (cell.extra > 0) {
+              <div class="more-indicator">+{{ cell.extra }} more</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</main>
+
+</div><!-- end shell -->
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" [class.open]="activePanel()">
+  @if (activePanel(); as ev) {
+    <div class="panel-header">
+      <div>
+        <div class="panel-type-badge" [style.background]="COLOR_HEX[ev.color]">
+          {{ COLOR_LABELS[ev.color] || 'Event' }}
+        </div>
+        <div class="panel-title">{{ ev.title }}</div>
+      </div>
+      <button class="panel-close" (click)="closePanel()">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="panel-row">
+        <div class="panel-row-label">📅 Date</div>
+        <div class="panel-row-val">{{ panelDateStr() }}</div>
+      </div>
+      @if (ev.loc) {
+        <div class="panel-row">
+          <div class="panel-row-label">📍 Location</div>
+          <div class="panel-row-val">{{ ev.loc }}</div>
+        </div>
+      }
+      @if (ev.desc) {
+        <div class="panel-row">
+          <div class="panel-row-label">📝 Description</div>
+          <div class="panel-row-val">{{ ev.desc }}</div>
+        </div>
+      }
+      <div class="panel-row" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <button class="btn btn-delete" (click)="deleteEvent(ev.id)">🗑 Delete Event</button>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-outline" (click)="closePanel()">Close</button>
+      <button class="btn btn-accent" (click)="editEvent()">Edit Event</button>
+    </div>
+  }
+</div>
+
+<!-- ADD / EDIT MODAL -->
+@if (showModal()) {
+  <div class="modal-bg open" (click)="$event.target === $event.currentTarget && closeModal()">
+    <div class="modal-box">
+      <div class="modal-mast">
+        <h3>{{ modalTitle() }}</h3>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="fg">
+          <label class="fl">Event Title</label>
+          <input class="fi" [ngModel]="evTitle()" (ngModelChange)="evTitle.set($event)" placeholder="e.g. Free Vaccination Drive"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Description</label>
+          <textarea class="fta" [ngModel]="evDesc()" (ngModelChange)="evDesc.set($event)" placeholder="Brief description of the event..."></textarea>
+        </div>
+        <div class="fg fg-row two">
+          <div>
+            <label class="fl">Start Date</label>
+            <input class="fi" type="date" [ngModel]="evStart()" (ngModelChange)="evStart.set($event)"/>
+          </div>
+          <div>
+            <label class="fl">End Date</label>
+            <input class="fi" type="date" [ngModel]="evEnd()" (ngModelChange)="evEnd.set($event)"/>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Location</label>
+          <input class="fi" [ngModel]="evLoc()" (ngModelChange)="evLoc.set($event)" placeholder="e.g. Barangay Hall"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Event Color</label>
+          <div class="color-picker-row">
+            @for (c of COLORS; track c) {
+              <div
+                class="cp"
+                [class.active]="evColor() === c"
+                [style.background]="COLOR_HEX[c]"
+                (click)="evColor.set(c)">
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-accent" (click)="saveEvent()">Save Event</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- TOAST -->
+@if (toastMsg()) {
+  <div class="toast show">{{ toastMsg() }}</div>
+}

@@ -1,0 +1,9 @@
+@if (hasData()) {
+  <div [innerHTML]="html()"></div>
+} @else {
+  <div class="empty-state">
+    <h1>🏛️ Nothing to preview</h1>
+    <p>Go back to the Event Builder and add some sections first.</p>
+    <a href="/admin/eventbuilder" class="empty-btn">Open Event Builder</a>
+  </div>
+}

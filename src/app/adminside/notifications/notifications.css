@@ -1,0 +1,16 @@
+:root { --bg: #F4F7F5; --surface: #FFFFFF; --border: #5d8e67; --border2: #5b5b5b; --accent: #2C7A3B; --text: #1C2920; --muted: #5C7063; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 58px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: .05em; display: flex; align-items: center; gap: 10px; text-transform: uppercase; text-decoration: none; color: var(--text); }
+.logo-mark { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #1E5C2A); border-radius: 6px; display: grid; place-items: center; font-size: .75rem; color: #fff; font-weight: 700; font-family: 'Oswald', sans-serif; }
+.logo-sub { font-family: 'DM Sans', sans-serif; color: var(--muted); font-weight: 400; font-size: .72rem; margin-left: 2px; text-transform: none; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.btn { padding: 6px 16px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 500; cursor: pointer; border: none; transition: all .16s; text-decoration: none; display: inline-flex; align-items: center; }
+.btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-outline:hover { color: var(--text); border-color: var(--border2); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { filter: brightness(1.1); }
+.coming-soon { min-height: calc(100vh - 58px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 60px 40px; text-align: center; }
+.cs-icon { font-size: 4rem; }
+.coming-soon h2 { font-family: 'Oswald', sans-serif; font-size: 1.8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text); }
+.coming-soon p { font-size: .9rem; color: var(--muted); max-width: 440px; line-height: 1.7; margin-bottom: 8px; }

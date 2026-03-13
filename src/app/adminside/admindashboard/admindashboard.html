@@ -1,0 +1,170 @@
+<header class="topbar">
+  <a class="logo" routerLink="/admin/dashboard">
+    <div class="logo-mark">AR</div>
+    Arreglado
+    <span class="logo-sub">Admin Dashboard</span>
+  </a>
+  <div class="topbar-right">
+    <span class="topbar-label">Barangay Pandacaqui</span>
+    <div class="avatar">BP</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="dashboard-hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-greeting">Admin Panel</div>
+        <div class="hero-title">Welcome Back,<br>Kapitan 👋</div>
+        <div class="hero-sub">Manage your barangay events, view your event calendar, and keep your residents informed — all in one place.</div>
+      </div>
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        System Online
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">{{ totalEvents() }}</div>
+        <div class="hero-stat-lbl">Events Created</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">{{ publishedCount() }}</div>
+        <div class="hero-stat-lbl">Published</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">{{ currentMonth }}</div>
+        <div class="hero-stat-lbl">Current Month</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">{{ currentYear }}</div>
+        <div class="hero-stat-lbl">Year</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="content">
+
+    <div class="section-label">Main Tools</div>
+
+    <div class="cards">
+
+      <!-- EVENT BUILDER -->
+      <a class="card card-green" routerLink="/admin/eventbuilder">
+        <div class="card-top">
+          <div class="card-icon-wrap green">🏗️</div>
+          <div class="card-title">Event Builder</div>
+          <div class="card-desc">Design and publish beautiful event pages for your barangay. Add sections, registration forms, schedules, and more — no coding needed.</div>
+          <div class="card-tags">
+            <span class="tag green">Page Editor</span>
+            <span class="tag green">Registration</span>
+            <span class="tag">Sections</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-text">Build your event page →</span>
+          <div class="card-arrow">↗</div>
+        </div>
+      </a>
+
+      <!-- CALENDAR -->
+      <a class="card card-gold" routerLink="/admin/calendar">
+        <div class="card-top">
+          <div class="card-icon-wrap gold">📅</div>
+          <div class="card-title">Event Calendar</div>
+          <div class="card-desc">View all your barangay events on a full monthly calendar. See upcoming vaccinations, contests, meetings, and community activities at a glance.</div>
+          <div class="card-tags">
+            <span class="tag gold">Monthly View</span>
+            <span class="tag gold">Schedule</span>
+            <span class="tag">Overview</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-text">Open calendar →</span>
+          <div class="card-arrow">↗</div>
+        </div>
+      </a>
+
+      <!-- NOTIFICATIONS (coming soon) -->
+      <div class="card card-slate disabled">
+        <div class="card-soon-badge">Coming Soon</div>
+        <div class="card-top">
+          <div class="card-icon-wrap slate">🔔</div>
+          <div class="card-title">Notifications &amp; Messages</div>
+          <div class="card-desc">Send announcements, reminders, and updates directly to your residents. Manage incoming messages and feedback from the community.</div>
+          <div class="card-tags">
+            <span class="tag">Announcements</span>
+            <span class="tag">Inbox</span>
+            <span class="tag">SMS / Push</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-text">Still in development</span>
+          <div class="card-arrow" style="color:var(--border)">–</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RECENT EVENTS -->
+    <div class="section-label">Recent Events</div>
+    <div class="recent-list">
+      @for (ev of recentEvents; track ev.name) {
+        <a class="recent-item" routerLink="/admin/eventbuilder">
+          <div class="recent-dot" [style.background]="ev.color"></div>
+          <div class="recent-info">
+            <div class="recent-name">{{ ev.name }}</div>
+            <div class="recent-meta">{{ ev.date }}</div>
+          </div>
+          <span class="recent-status" [class]="ev.status">{{ ev.status | titlecase }}</span>
+        </a>
+      }
+    </div>
+
+    <!-- QUICK TIPS -->
+    <div class="section-label" style="margin-top:36px">Quick Tips</div>
+    <div class="tips-grid">
+      <div class="tip">
+        <div class="tip-icon">💡</div>
+        <div class="tip-text">
+          <strong>Start with the Hero Section</strong>
+          <span>Always fill in your event name, date, and a short description in the Hero Banner first — this is what residents see first.</span>
+        </div>
+      </div>
+      <div class="tip">
+        <div class="tip-icon">📋</div>
+        <div class="tip-text">
+          <strong>Add a Registration Form</strong>
+          <span>Use the Form section to collect attendee details. Customize the fields to fit your event — name, purok, mobile number, etc.</span>
+        </div>
+      </div>
+      <div class="tip">
+        <div class="tip-icon">📅</div>
+        <div class="tip-text">
+          <strong>Check the Calendar Often</strong>
+          <span>Use the Event Calendar to avoid scheduling conflicts and see all upcoming barangay activities at a glance.</span>
+        </div>
+      </div>
+      <div class="tip">
+        <div class="tip-icon">🚀</div>
+        <div class="tip-text">
+          <strong>Publish When Ready</strong>
+          <span>Hit "Publish Event" in the Event Builder to make your page live for residents to view. Unpublished pages are safe drafts.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="dash-footer">
+    <div class="footer-left">
+      <strong>Arreglado</strong> &nbsp;·&nbsp; Barangay Pandacaqui Event Management System
+    </div>
+    <div class="footer-right">v1.0 · 2026</div>
+  </div>
+
+</div>

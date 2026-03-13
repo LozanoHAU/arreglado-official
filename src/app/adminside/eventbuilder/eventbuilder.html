@@ -1,0 +1,597 @@
+<div class="shell">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark">AR</div>
+    Arreglado
+    <span class="logo-sub">Barangay Event Builder</span>
+  </div>
+  <div class="topbar-center">
+    <button class="tab-btn" [class.active]="activeTab()==='content'" (click)="switchTab('content')">Content</button>
+    <button class="tab-btn" [class.active]="activeTab()==='theme'"   (click)="switchTab('theme')">Theme</button>
+  </div>
+  <div class="topbar-right">
+    <div class="status-dot" [class.published]="isPublished()"></div>
+    <span class="status-txt">{{ isPublished() ? 'Published' : 'Unsaved changes' }}</span>
+    <button class="btn btn-outline" (click)="openPreview()">Preview ↗</button>
+    <button class="btn btn-publish" (click)="publishSite()">Publish Event</button>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-inner">
+
+    <!-- CONTENT TAB -->
+    @if (activeTab() === 'content') {
+      <div>
+        <div class="brgy-banner">
+          <div class="brgy-banner-icon">🏛️</div>
+          <div class="brgy-banner-text">
+            <strong>Arreglado</strong>
+            Build your barangay event page quickly and easily.
+          </div>
+        </div>
+
+        <div class="sb-section" style="margin-top:8px">
+          <div class="sb-label">Page Layout</div>
+          <div class="lc" [class.active]="SD().layout==='agency'" (click)="setLayout('agency')">
+            <div class="lc-thumb" style="background:linear-gradient(135deg,#0d1a0f,#1a3520)">
+              <div class="lc-bar" style="height:7px;width:100%;background:rgba(61,158,82,.4)"></div>
+              <div class="lc-bar" style="height:4px;width:65%;background:rgba(61,158,82,.2)"></div>
+              <div class="lc-bar" style="height:9px;width:100%;background:rgba(61,158,82,.3)"></div>
+            </div>
+            <div class="lc-meta"><div class="lc-name">Official</div><div class="lc-sub">Dark &amp; bold</div></div>
+            <div class="lc-check">✓</div>
+          </div>
+          <div class="lc" [class.active]="SD().layout==='minimal'" (click)="setLayout('minimal')">
+            <div class="lc-thumb" style="background:linear-gradient(135deg,#f5f2ed,#e8e3db)">
+              <div class="lc-bar" style="height:7px;width:100%;background:rgba(0,0,0,.12)"></div>
+              <div class="lc-bar" style="height:4px;width:55%;background:rgba(0,0,0,.12)"></div>
+              <div class="lc-bar" style="height:9px;width:100%;background:rgba(0,0,0,.12)"></div>
+            </div>
+            <div class="lc-meta"><div class="lc-name">Clean</div><div class="lc-sub">Light &amp; minimal</div></div>
+            <div class="lc-check">✓</div>
+          </div>
+          <div class="lc" [class.active]="SD().layout==='bold'" (click)="setLayout('bold')">
+            <div class="lc-thumb" style="background:linear-gradient(135deg,#0a0000,#200505)">
+              <div class="lc-bar" style="height:7px;width:100%;background:rgba(196,30,58,.4)"></div>
+              <div class="lc-bar" style="height:4px;width:75%;background:rgba(196,30,58,.2)"></div>
+              <div class="lc-bar" style="height:9px;width:100%;background:rgba(196,30,58,.4)"></div>
+            </div>
+            <div class="lc-meta"><div class="lc-name">Bold</div><div class="lc-sub">Strong &amp; vivid</div></div>
+            <div class="lc-check">✓</div>
+          </div>
+        </div>
+
+        <div class="sb-divider"></div>
+
+        <div class="sb-section">
+          <div class="sb-label">Page Sections <span class="sb-label-count">{{ sectionCount() }}</span></div>
+          <div class="section-items">
+            @for (sec of SD().sections; track sec.id) {
+              <div
+                class="si"
+                [class.active]="activeSec()===sec.id"
+                [class.dragging]="dragSrcId()===sec.id"
+                [class.drag-over]="dragOverId()===sec.id"
+                draggable="true"
+                (click)="selectSection(sec.id)"
+                (dragstart)="onDragStart(sec.id)"
+                (dragover)="onDragOver(sec.id, $event)"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop(sec.id, $event)"
+                (dragend)="onDragEnd()">
+                <span class="si-handle">⠿</span>
+                <span class="si-icon">{{ secIcon(sec.type) }}</span>
+                <div class="si-info">
+                  <div class="si-name">{{ secLabel(sec.type) }}</div>
+                  <div class="si-type">{{ sec.type.replaceAll('-', ' ') }}</div>
+                </div>
+                <button class="si-del" (click)="$event.stopPropagation(); removeSection(sec.id)" title="Remove section">✕</button>
+              </div>
+            }
+          </div>
+          <button class="btn-add-section" (click)="showModal.set(true)">＋ Add Section</button>
+        </div>
+      </div>
+    }
+
+    <!-- THEME TAB -->
+    @if (activeTab() === 'theme') {
+      <div>
+        <div class="sb-section">
+          <div class="sb-label">Color Presets</div>
+          <div class="theme-row">
+            @for (pr of PRESETS; track pr.p) {
+              <div class="tp" [class.active]="SD().theme.primary===pr.p"
+                [style.background]="pr.p" [title]="pr.label"
+                (click)="applyPreset(pr.p, pr.s)"></div>
+            }
+          </div>
+        </div>
+        <div class="sb-section">
+          <div class="sb-label">Custom Colors</div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:0 4px">
+            <div class="mini-color-field">
+              <label class="fl" style="margin:0">Primary</label>
+              <div class="cswatch"><input type="color" [value]="SD().theme.primary" (input)="setThemeField('primary', $any($event.target).value)"/></div>
+              <input class="chex" [value]="SD().theme.primary" (input)="setThemeField('primary', $any($event.target).value)" placeholder="#3d9e52"/>
+            </div>
+            <div class="mini-color-field">
+              <label class="fl" style="margin:0">Secondary</label>
+              <div class="cswatch"><input type="color" [value]="SD().theme.secondary" (input)="setThemeField('secondary', $any($event.target).value)"/></div>
+              <input class="chex" [value]="SD().theme.secondary" (input)="setThemeField('secondary', $any($event.target).value)" placeholder="#d4a017"/>
+            </div>
+          </div>
+        </div>
+        <div class="sb-section">
+          <div class="sb-label">Custom CSS</div>
+          <textarea class="code-field" [value]="SD().theme.customCss" (input)="setThemeField('customCss', $any($event.target).value)" placeholder="/* override anything */" style="margin:0 4px;width:calc(100% - 8px)"></textarea>
+        </div>
+      </div>
+    }
+
+  </div>
+</aside>
+
+<!-- MAIN EDITOR -->
+<main class="main">
+  <div class="editor-area" id="editor-area">
+
+    @if (activeTab() === 'theme') {
+      <!-- ── THEME EDITOR ── -->
+      <div class="sec-header">
+        <div class="sec-header-text"><h2>Theme &amp; Colors</h2><p>Global appearance settings — applied across all sections.</p></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Custom CSS Overrides</label>
+        <textarea class="code-field" [value]="SD().theme.customCss" (input)="setThemeField('customCss',$any($event.target).value)" placeholder="/* Paste any CSS here to override the client page */"></textarea>
+        <div class="fhint">Applied as a &lt;style&gt; tag on the client page after all other styles.</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Typography Note</label>
+        <p style="font-size:.82rem;color:var(--muted);line-height:1.7">Each layout uses its own typeface pairing. <em>Official</em> uses Syne + DM Sans, <em>Clean</em> uses Playfair Display + DM Sans, and <em>Bold</em> uses Syne with heavy uppercase treatments. Use Custom CSS above to override if needed.</p>
+      </div>
+    } @else {
+
+      @if (getActiveSec(); as sec) {
+
+        <div class="sec-header">
+          <div class="sec-header-text">
+            <h2>{{ secLabel(sec.type) }}</h2>
+            <p>{{ secDesc(sec.type) }}</p>
+          </div>
+          <div class="sec-type-badge">{{ secIcon(sec.type) }} {{ sec.type.replaceAll('-', ' ') }}</div>
+        </div>
+
+        <!-- ── HERO ── -->
+        @if (sec.type === 'hero') {
+          <div class="fg">
+            <div class="fg-row two">
+              <div>
+                <label class="fl">Barangay / Site Name</label>
+                <input class="fi" [value]="sec.data['navBrand']" (input)="setField(sec.id,'navBrand',$any($event.target).value)" placeholder="Barangay Pandacaqui"/>
+                <div class="fhint">Shown in the navigation bar (e.g. "Barangay Pandacaqui")</div>
+              </div>
+              <div>
+                <label class="fl">Event Label</label>
+                <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)" placeholder="Upcoming Event"/>
+                <div class="fhint">Short label above the headline (e.g. "Upcoming Event" or "Free Vaccination Drive")</div>
+              </div>
+            </div>
+          </div>
+          <div class="fg">
+            <div>
+              <label class="fl">Event Headline</label>
+              <input class="fi" [value]="sec.data['headline']" (input)="setField(sec.id,'headline',$any($event.target).value)" placeholder="Keep it under 8 words"/>
+              <div class="fhint">Keep it under 8 words for best impact</div>
+            </div>
+            <div style="height:10px"></div>
+            <div>
+              <label class="fl">Event Description</label>
+              <textarea class="fta" rows="3" [value]="sec.data['sub']" (input)="setField(sec.id,'sub',$any($event.target).value)"></textarea>
+            </div>
+            <div style="height:10px"></div>
+            <div class="fg-row two">
+              <div>
+                <label class="fl">CTA Button Text</label>
+                <input class="fi" [value]="sec.data['cta']" (input)="setField(sec.id,'cta',$any($event.target).value)" placeholder="Register Now"/>
+                <div class="fhint">Leave blank to hide the button (e.g. "Register Now" or "Join Us")</div>
+              </div>
+              <div>
+                <label class="fl">CTA Button Link</label>
+                <input class="fi" [value]="sec.data['ctaLink']" (input)="setField(sec.id,'ctaLink',$any($event.target).value)" placeholder="#form"/>
+                <div class="fhint">e.g. #form or https://…</div>
+              </div>
+            </div>
+          </div>
+          <div class="fg">
+            <div>
+              <label class="fl">Event Banner / Background Image</label>
+              <div class="img-drop">
+                <input type="file" accept="image/*" (change)="handleImg(sec.id,'heroImg',$event)"/>
+                @if (sec.data['heroImg']) { <img class="img-preview" [src]="sec.data['heroImg']" alt=""/> }
+                <div class="img-drop-icon" [style.display]="sec.data['heroImg'] ? 'none' : ''">🖼</div>
+                <div class="img-drop-txt" [style.display]="sec.data['heroImg'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
+                <div class="img-overlay">🔄 Replace</div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ── ABOUT SIMPLE ── -->
+        @if (sec.type === 'about-simple') {
+          <div class="fg">
+            <div class="fg-row two">
+              <div>
+                <label class="fl">Eyebrow Label</label>
+                <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
+                <div class="fhint">Small label above the title</div>
+              </div>
+              <div>
+                <label class="fl">Section Title</label>
+                <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
+              </div>
+            </div>
+            <div style="height:10px"></div>
+            <div class="fg-row" style="grid-template-columns:auto 1fr;align-items:center;gap:12px">
+              <div>
+                <label class="fl">Image Position</label>
+                <div class="img-pos-toggle">
+                  <button class="img-pos-btn" [class.active]="sec.data['imgPos']==='left'"  (click)="setImgPos(sec.id,'left')">← Left</button>
+                  <button class="img-pos-btn" [class.active]="sec.data['imgPos']==='right'" (click)="setImgPos(sec.id,'right')">Right →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+            <div class="fg">
+              <div>
+                <label class="fl">Body Text</label>
+                <textarea class="fta" rows="5" [value]="sec.data['body']" (input)="setField(sec.id,'body',$any($event.target).value)"></textarea>
+              </div>
+              <div style="height:12px"></div>
+              <div>
+                <label class="fl">Tagline / Meta Line</label>
+                <input class="fi" [value]="sec.data['tagline']" (input)="setField(sec.id,'tagline',$any($event.target).value)"/>
+                <div class="fhint">e.g. "Every Thursday · Barangay Hall · 8AM–5PM"</div>
+              </div>
+            </div>
+            <div class="fg">
+              <div>
+                <label class="fl">Section Image</label>
+                <div class="img-drop">
+                  <input type="file" accept="image/*" (change)="handleImg(sec.id,'img',$event)"/>
+                  @if (sec.data['img']) { <img class="img-preview" [src]="sec.data['img']" alt=""/> }
+                  <div class="img-drop-icon" [style.display]="sec.data['img'] ? 'none' : ''">🖼</div>
+                  <div class="img-drop-txt" [style.display]="sec.data['img'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
+                  <div class="img-overlay">🔄 Replace</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ── ABOUT CENTERED ── -->
+        @if (sec.type === 'about-centered') {
+          <div class="fg">
+            <div>
+              <label class="fl">Eyebrow Label</label>
+              <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
+              <div class="fhint">Small label above the headline</div>
+            </div>
+            <div style="height:10px"></div>
+            <div>
+              <label class="fl">Section Title</label>
+              <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
+            </div>
+            <div style="height:12px"></div>
+            <div>
+              <label class="fl">Body Text</label>
+              <textarea class="fta" rows="5" [value]="sec.data['body']" (input)="setField(sec.id,'body',$any($event.target).value)"></textarea>
+            </div>
+          </div>
+          <div class="fg">
+            <div class="toggle-row">
+              <label class="fl">Show Pull Quote</label>
+              <label class="toggle">
+                <input type="checkbox" [checked]="sec.data['showQuote']" (change)="setBool(sec.id,'showQuote',$any($event.target).checked)"/>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            @if (sec.data['showQuote']) {
+              <div style="height:10px"></div>
+              <div>
+                <label class="fl">Pull Quote Text</label>
+                <input class="fi" [value]="sec.data['quote']" (input)="setField(sec.id,'quote',$any($event.target).value)"/>
+              </div>
+            }
+          </div>
+          <div class="fg">
+            <div>
+              <label class="fl">Banner Image (optional, full-width)</label>
+              <div class="img-drop">
+                <input type="file" accept="image/*" (change)="handleImg(sec.id,'bannerImg',$event)"/>
+                @if (sec.data['bannerImg']) { <img class="img-preview" [src]="sec.data['bannerImg']" alt=""/> }
+                <div class="img-drop-icon" [style.display]="sec.data['bannerImg'] ? 'none' : ''">🖼</div>
+                <div class="img-drop-txt" [style.display]="sec.data['bannerImg'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
+                <div class="img-overlay">🔄 Replace</div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ── ABOUT STATS ── -->
+        @if (sec.type === 'about-stats') {
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+            <div>
+              <div class="fg">
+                <div>
+                  <label class="fl">Eyebrow Label</label>
+                  <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
+                </div>
+                <div style="height:10px"></div>
+                <div>
+                  <label class="fl">Section Title</label>
+                  <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
+                </div>
+                <div style="height:10px"></div>
+                <div>
+                  <label class="fl">Body Text</label>
+                  <textarea class="fta" rows="4" [value]="sec.data['body']" (input)="setField(sec.id,'body',$any($event.target).value)"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Key Stats / Metrics</label>
+              <div class="stats-list">
+                @for (stat of sec.data['stats']; track $index) {
+                  <div class="stat-item">
+                    <input class="fi" placeholder="e.g. 500+" [value]="stat.num" (input)="setStatField(sec.id,$index,'num',$any($event.target).value)"/>
+                    <input class="fi" placeholder="Label"     [value]="stat.label" (input)="setStatField(sec.id,$index,'label',$any($event.target).value)"/>
+                    <button class="btn-del-item" (click)="removeStat(sec.id,$index)">✕</button>
+                  </div>
+                }
+              </div>
+              @if (sec.data['stats'].length < 6) {
+                <button class="btn-add-item" (click)="addStat(sec.id)">+ Add Stat</button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── FEATURES ── -->
+        @if (sec.type === 'features') {
+          <div class="fg">
+            <div>
+              <label class="fl">Section Title</label>
+              <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
+            </div>
+          </div>
+          <div class="feat-list">
+            @for (item of sec.data['items']; track $index) {
+              <div class="feat-item">
+                <div class="feat-item-hd">
+                  <span class="feat-item-lbl">Item {{ $index + 1 }}</span>
+                  <button class="btn-del-item" (click)="removeFeat(sec.id,$index)">✕ Remove</button>
+                </div>
+                <div class="fg-row three" style="gap:10px">
+                  <div>
+                    <label class="fl">Emoji</label>
+                    <input class="fi" [value]="item.emoji" (input)="setFeatField(sec.id,$index,'emoji',$any($event.target).value)" placeholder="💉" style="text-align:center;font-size:1.2rem"/>
+                  </div>
+                  <div>
+                    <label class="fl">Title</label>
+                    <input class="fi" [value]="item.title" (input)="setFeatField(sec.id,$index,'title',$any($event.target).value)" placeholder="Activity name"/>
+                  </div>
+                  <div>
+                    <label class="fl">Description</label>
+                    <input class="fi" [value]="item.desc" (input)="setFeatField(sec.id,$index,'desc',$any($event.target).value)" placeholder="Short description"/>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          @if (sec.data['items'].length < 6) {
+            <button class="btn-add-item" (click)="addFeat(sec.id)">+ Add Card</button>
+          }
+        }
+
+        <!-- ── FORM ── -->
+        @if (sec.type === 'form') {
+          <div class="fg">
+            <div class="fg-row two">
+              <div>
+                <label class="fl">Eyebrow Label</label>
+                <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
+                <div class="fhint">Small label above the form title</div>
+              </div>
+              <div>
+                <label class="fl">Form Title</label>
+                <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
+              </div>
+            </div>
+            <div style="height:10px"></div>
+            <div class="fg-row two">
+              <div>
+                <label class="fl">Submit Button Label</label>
+                <input class="fi" [value]="sec.data['submitLabel']" (input)="setField(sec.id,'submitLabel',$any($event.target).value)"/>
+              </div>
+            </div>
+            <div style="height:10px"></div>
+            <div>
+              <label class="fl">Form Description (optional)</label>
+              <textarea class="fta" rows="2" [value]="sec.data['desc']" (input)="setField(sec.id,'desc',$any($event.target).value)"></textarea>
+            </div>
+            <div style="height:10px"></div>
+            <div>
+              <label class="fl">Success Message</label>
+              <input class="fi" [value]="sec.data['successMsg']" (input)="setField(sec.id,'successMsg',$any($event.target).value)"/>
+              <div class="fhint">Shown after the form is submitted</div>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Form Fields</label>
+            <div class="form-fields-list">
+              @for (f of sec.data['fields']; track f.id; let fi = $index) {
+                <div class="ff-item" [class.open]="isFfOpen(f.id)">
+                  <div class="ff-item-head" (click)="toggleFF(f.id)">
+                    <span class="ff-drag" draggable="true"
+                      (dragstart)="onFFDragStart(sec.id, fi)"
+                      (dragover)="$event.preventDefault()"
+                      (drop)="onFFDrop(sec.id, fi)">⠿</span>
+                    <span class="ff-type-badge">{{ f.type }}</span>
+                    <span class="ff-label-preview">{{ f.label || 'Untitled field' }}</span>
+                    @if (f.required) { <span class="ff-required-badge">Required</span> }
+                    <span class="ff-chevron">▾</span>
+                    <button class="btn-del-field" (click)="$event.stopPropagation(); removeFormField(sec.id, f.id)">✕</button>
+                  </div>
+                  <div class="ff-body">
+                    <div class="fg-row two" style="margin-bottom:10px">
+                      <div>
+                        <label class="fl">Field Type</label>
+                        <select class="fsel" [value]="f.type" (change)="setFFField(sec.id,f.id,'type',$any($event.target).value)">
+                          @for (ft of FIELD_TYPES; track ft) { <option [value]="ft">{{ ft }}</option> }
+                        </select>
+                      </div>
+                      <div>
+                        <label class="fl">Label</label>
+                        <input class="fi" [value]="f.label" (input)="setFFField(sec.id,f.id,'label',$any($event.target).value)"/>
+                      </div>
+                    </div>
+                    <div class="fg-row two" style="margin-bottom:10px">
+                      <div>
+                        <label class="fl">Placeholder</label>
+                        <input class="fi" [value]="f.placeholder||''" (input)="setFFField(sec.id,f.id,'placeholder',$any($event.target).value)"/>
+                      </div>
+                      <div>
+                        <label class="fl">Width</label>
+                        <select class="fsel" [value]="f.width" (change)="setFFField(sec.id,f.id,'width',$any($event.target).value)">
+                          <option value="full">Full Width</option>
+                          <option value="half">Half Width</option>
+                        </select>
+                      </div>
+                    </div>
+                    @if (f.type === 'select') {
+                      <div style="margin-bottom:10px">
+                        <label class="fl">Options (comma-separated)</label>
+                        <input class="fi" [value]="(f.options||[]).join(', ')" placeholder="Option A, Option B"
+                          (input)="setFFField(sec.id,f.id,'options', splitOptions($any($event.target).value))"/>
+                      </div>
+                    }
+                    <div class="toggle-row">
+                      <label class="fl">Required field</label>
+                      <label class="toggle">
+                        <input type="checkbox" [checked]="f.required" (change)="setFFField(sec.id,f.id,'required',$any($event.target).checked)"/>
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <button class="btn-add-item" (click)="addFormField(sec.id)">+ Add Field</button>
+          </div>
+        }
+
+        <!-- ── CONTACT ── -->
+        @if (sec.type === 'contact') {
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+            <div>
+              <div class="fg">
+                <div>
+                  <label class="fl">Headline</label>
+                  <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
+                </div>
+                <div style="height:10px"></div>
+                <div>
+                  <label class="fl">Description</label>
+                  <textarea class="fta" rows="3" [value]="sec.data['body']" (input)="setField(sec.id,'body',$any($event.target).value)"></textarea>
+                </div>
+              </div>
+              <div class="fg">
+                <div class="fg-row two">
+                  <div>
+                    <label class="fl">Email Address</label>
+                    <input class="fi" type="email" [value]="sec.data['email']" (input)="setField(sec.id,'email',$any($event.target).value)"/>
+                  </div>
+                  <div>
+                    <label class="fl">Phone (optional)</label>
+                    <input class="fi" type="tel" [value]="sec.data['phone']" (input)="setField(sec.id,'phone',$any($event.target).value)"/>
+                  </div>
+                </div>
+              </div>
+              <div class="fg">
+                <div>
+                  <label class="fl">Footer Copyright</label>
+                  <input class="fi" [value]="sec.data['footerCopy']" (input)="setField(sec.id,'footerCopy',$any($event.target).value)" placeholder="e.g. © 2025 Barangay Pandacaqui. All rights reserved."/>
+                </div>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Social Links</label>
+              <div>
+                <label class="fl">Facebook URL</label>
+                <input class="fi" [value]="sec.data['twitter']" (input)="setField(sec.id,'twitter',$any($event.target).value)"/>
+                <div class="fhint">Link to your barangay Facebook page</div>
+              </div>
+              <div style="height:8px"></div>
+              <div>
+                <label class="fl">Instagram URL</label>
+                <input class="fi" [value]="sec.data['instagram']" (input)="setField(sec.id,'instagram',$any($event.target).value)"/>
+              </div>
+              <div style="height:8px"></div>
+              <div>
+                <label class="fl">Other Link</label>
+                <input class="fi" [value]="sec.data['linkedin']" (input)="setField(sec.id,'linkedin',$any($event.target).value)"/>
+                <div class="fhint">YouTube, website, etc.</div>
+              </div>
+            </div>
+          </div>
+        }
+
+      } @else {
+        <div class="empty-editor">
+          <div style="font-size:3rem">🏛️</div>
+          <h3>Select a section to edit</h3>
+          <p>Choose a section from the sidebar, or add one using the button below.</p>
+        </div>
+      }
+
+    }
+
+  </div>
+</main>
+
+</div><!-- end shell -->
+
+<!-- ADD SECTION MODAL -->
+<div class="modal-bg" [class.open]="showModal()" (click)="$event.target === $event.currentTarget && showModal.set(false)">
+  <div class="modal-box">
+    <div class="modal-mast">
+      <div>
+        <h3>Add a Section</h3>
+        <p>Pick a block to add to your event page</p>
+      </div>
+      <button class="modal-close" (click)="showModal.set(false)">✕</button>
+    </div>
+    <div class="stg">
+      @for (cat of sectionTypes(); track cat.cat) {
+        <div style="grid-column:1/-1;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:4px 0 2px;font-family:'Oswald',sans-serif">{{ cat.cat }}</div>
+        @for (item of cat.items; track item.type) {
+          <div class="stc" [class.disabled]="item.disabled" (click)="!item.disabled && addSection(item.type)">
+            <div class="stc-thumb">{{ item.meta.icon }}</div>
+            <div class="stc-badge">{{ item.meta.cat }}</div>
+            <div class="stc-name">{{ item.meta.label }}</div>
+            <div class="stc-desc">{{ item.disabled ? 'Already added — only one allowed.' : item.meta.desc }}</div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" [class.show]="toastMsg()" [class.warn]="toastWarn()">{{ toastMsg() }}</div>
