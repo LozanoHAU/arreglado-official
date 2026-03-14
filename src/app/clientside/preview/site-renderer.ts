@@ -1,8 +1,10 @@
 /**
  * site-renderer.ts
- * Pure TypeScript port of the vanilla-JS rendering engine from client.html.
- * Returns a full HTML string (including <style> and all sections) that can
- * be injected via [innerHTML] (after bypassSecurityTrustHtml).
+ * Pure TypeScript rendering engine.
+ * Exports:
+ *   renderStyles(SD)  → raw CSS string (inject into document.head)
+ *   renderBody(SD)    → sections HTML string only (bind via [innerHTML])
+ *   renderSite(SD)    → full standalone HTML document (kept for other uses)
  */
 import { SiteData, SiteSection } from '../../shared/event.model';
 
@@ -331,29 +333,15 @@ function renderSection(sec: SiteSection, L: string, SD: SiteData): string {
   }
 }
 
-// ── PUBLIC API ───────────────────────────────────────────────────────────────
-export function renderSite(SD: SiteData): string {
-  const L = SD.layout || 'agency';
-  const body = SD.sections.map(s => renderSection(s, L, SD)).join('\n');
-  const bodyClass = L; // 'agency' | 'minimal' | 'bold'
-
-  // Inline the Google Fonts link + the full CSS from client.html
-  const fonts = `<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&display=swap" rel="stylesheet"/>`;
-
-  const customCss = SD.theme?.customCss ? `<style>${SD.theme.customCss}</style>` : '';
+// ── CSS STRING (no <style> tags) ─────────────────────────────────────────────
+export function renderStyles(SD: SiteData): string {
   const c1 = SD.theme?.primary   || '#7c6aff';
   const c2 = SD.theme?.secondary || '#ff6a8a';
+  const customCss = SD.theme?.customCss || '';
 
-  const scrollReveal = `<script>
-    var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}});},{threshold:.1});
-    document.querySelectorAll('[data-r]').forEach(function(el){obs.observe(el);});
-  </script>`;
-
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>${fonts}
-<style>
+  return `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;overflow-x:hidden}
 :root{--c1:${c1};--c2:${c2}}
 [data-r]{opacity:0;transform:translateY(22px);transition:opacity .55s,transform .55s}
 [data-r].vis{opacity:1;transform:none}
@@ -542,9 +530,24 @@ label.b-cf-lbl{display:block;font-size:.65rem;font-weight:700;text-transform:upp
 .b-s-btn{width:40px;height:40px;background:transparent;border:2px solid var(--c1);display:flex;align-items:center;justify-content:center;font-size:.8rem;text-decoration:none;transition:all .15s;color:var(--c1)}.b-s-btn:hover{background:var(--c1);color:#080005}
 .b-footer{background:#050003;border-top:2px solid var(--c1);padding:16px 5vw;display:flex;align-items:center;justify-content:space-between}
 .b-footer span{font-size:.7rem;color:rgba(255,255,255,.18);text-transform:uppercase;letter-spacing:.08em}
-</style>${customCss}
-</head><body class="${bodyClass}">
-<div id="root">${body}</div>
-${scrollReveal}
-</body></html>`;
+${customCss}`;
+}
+
+// ── BODY HTML (sections only) ────────────────────────────────────────────────
+export function renderBody(SD: SiteData): string {
+  const L = SD.layout || 'agency';
+  return SD.sections.map(s => renderSection(s, L, SD)).join('\n');
+}
+
+// ── FULL STANDALONE DOCUMENT (kept for reference) ────────────────────────────
+export function renderSite(SD: SiteData): string {
+  const L = SD.layout || 'agency';
+  const body = renderBody(SD);
+  const fonts = `<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&display=swap" rel="stylesheet"/>`;
+  const css = renderStyles(SD);
+  const scrollReveal = `<script>
+    var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}});},{threshold:.1});
+    document.querySelectorAll('[data-r]').forEach(function(el){obs.observe(el);});
+  </script>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>${fonts}<style>${css}</style></head><body class="${L}"><div id="root">${body}</div>${scrollReveal}</body></html>`;
 }

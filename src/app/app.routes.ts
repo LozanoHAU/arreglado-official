@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'admin/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: 'client/eventpage', pathMatch: 'full' },
   {
     path: 'admin',
     children: [
@@ -43,5 +43,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: 'admin/dashboard' },
+  { path: '**', redirectTo: 'client/eventpage' },
 ];
