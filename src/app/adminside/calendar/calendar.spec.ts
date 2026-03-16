@@ -8,6 +8,7 @@ describe('CalendarComponent', () => {
   let fixture: ComponentFixture<CalendarComponent>;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [CalendarComponent],
       providers: [provideRouter(routes)],
@@ -22,7 +23,11 @@ describe('CalendarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should generate a 42-cell or 35-cell calendar grid', () => {
+  it('should start with no events (no predefined data)', () => {
+    expect(component.events().length).toBe(0);
+  });
+
+  it('should generate a calendar grid divisible by 7', () => {
     const days = component.grid();
     expect(days.length % 7).toBe(0);
     expect(days.length).toBeGreaterThanOrEqual(28);
@@ -76,6 +81,17 @@ describe('CalendarComponent', () => {
     expect(component.events().length).toBe(initial + 1);
   });
 
+  it('should add an event with a templateId when one is selected', () => {
+    component.openAddModal(null);
+    component.evTitle.set('Linked Event');
+    component.evStart.set('2026-04-01');
+    component.evEnd.set('2026-04-03');
+    component.evTemplateId.set('t-fake-id');
+    component.saveEvent();
+    const added = component.events().find(e => e.title === 'Linked Event');
+    expect(added?.templateId).toBe('t-fake-id');
+  });
+
   it('should delete an event', () => {
     component.openAddModal(null);
     component.evTitle.set('Delete Me');
@@ -87,5 +103,15 @@ describe('CalendarComponent', () => {
     component.showPanel(added!);
     component.deleteEvent(added!.id);
     expect(component.events().find(e => e.id === added!.id)).toBeUndefined();
+  });
+
+  it('onTemplateSelect should auto-fill title when title is empty', () => {
+    // Seed a fake template in localStorage so the component can find it
+    const fakeTemplates = [{ id: 'tpl1', name: 'Vaccination Drive', createdAt: new Date().toISOString(), siteData: {} }];
+    localStorage.setItem('ar_templates', JSON.stringify(fakeTemplates));
+    component.openAddModal(null);
+    component.evTitle.set('');
+    component.onTemplateSelect('tpl1');
+    expect(component.evTitle()).toBe('Vaccination Drive');
   });
 });

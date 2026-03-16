@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { CalendarEvent, SiteData, SiteSection } from './event.model';
+import { CalendarEvent, EventTemplate, SiteData, SiteSection } from './event.model';
 
-const SF_DATA_KEY = 'sf_data';
-const SF_PUB_KEY  = 'sf_published';
-const CAL_KEY     = 'ar_calendar_events';
+const SF_DATA_KEY   = 'sf_data';       // current draft → drives Preview page
+const TEMPLATES_KEY = 'ar_templates';  // saved templates → selectable in Calendar
+const CAL_KEY       = 'ar_calendar_events'; // calendar events (with optional templateId)
 
 // ─── DEFAULT DATA FACTORIES ───────────────────────────────────────────────────
 export function defaultData(type: string): Record<string, any> {
@@ -47,16 +47,15 @@ const DEFAULT_SITE: SiteData = {
   theme: { primary: '#3d9e52', secondary: '#d4a017', customCss: '' },
 };
 
-const DEFAULT_CAL_EVENTS: CalendarEvent[] = [
-  { id: 'e1', title: 'Free Vaccination Drive',            desc: 'Open to all residents of Purok 1 to 4.', start: '2026-03-15', end: '2026-03-15', color: 'ev-green',  loc: 'Barangay Hall' },
-  { id: 'e2', title: 'Barangay Fiesta Preparation Meeting',desc: '',                                       start: '2026-03-20', end: '2026-03-20', color: 'ev-purple', loc: 'Multi-purpose Hall' },
-  { id: 'e3', title: 'Senior Citizens Health Check',      desc: 'Health check & orientation.',             start: '2026-03-25', end: '2026-03-26', color: 'ev-blue',   loc: 'Barangay Health Center' },
-  { id: 'e4', title: 'Youth Livelihood Skills Training',  desc: '',                                        start: '2026-04-03', end: '2026-04-05', color: 'ev-gold',   loc: 'Barangay Hall' },
-];
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
 
 @Injectable({ providedIn: 'root' })
 export class EventService {
-  // ── Site Data ──────────────────────────────────────────────────────────────
+
+  // ── Draft (Preview page) ───────────────────────────────────────────────────
   loadSiteData(): SiteData {
     try {
       const raw = localStorage.getItem(SF_DATA_KEY);
@@ -73,21 +72,30 @@ export class EventService {
     localStorage.setItem(SF_DATA_KEY, JSON.stringify(data));
   }
 
-  publishSiteData(data: SiteData): void {
-    localStorage.setItem(SF_DATA_KEY, JSON.stringify(data));
-    localStorage.setItem(SF_PUB_KEY,  JSON.stringify(data));
-  }
-
-  getPublishedData(): SiteData | null {
+  // ── Templates ──────────────────────────────────────────────────────────────
+  loadTemplates(): EventTemplate[] {
     try {
-      const raw = localStorage.getItem(SF_PUB_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
+      const raw = localStorage.getItem(TEMPLATES_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
   }
 
-  isPublished(data: SiteData): boolean {
-    const pub = this.getPublishedData();
-    return !!pub && JSON.stringify(pub) === JSON.stringify(data);
+  saveTemplate(name: string, data: SiteData): EventTemplate {
+    const templates = this.loadTemplates();
+    const template: EventTemplate = {
+      id: 't' + Date.now(),
+      name: name.trim() || 'Untitled Template',
+      createdAt: new Date().toISOString(),
+      siteData: JSON.parse(JSON.stringify(data)),
+    };
+    templates.unshift(template); // newest first
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+    return template;
+  }
+
+  deleteTemplate(id: string): void {
+    const templates = this.loadTemplates().filter(t => t.id !== id);
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
   }
 
   // ── Calendar Events ────────────────────────────────────────────────────────
@@ -96,10 +104,47 @@ export class EventService {
       const raw = localStorage.getItem(CAL_KEY);
       if (raw) return JSON.parse(raw);
     } catch { /* ignore */ }
-    return JSON.parse(JSON.stringify(DEFAULT_CAL_EVENTS));
+    return []; // no predefined events — admin starts with a clean slate
   }
 
   saveCalendarEvents(events: CalendarEvent[]): void {
     localStorage.setItem(CAL_KEY, JSON.stringify(events));
   }
+
+  // ── Live Eventpage Resolution ──────────────────────────────────────────────
+  // Returns the SiteData for whichever calendar event is currently active
+  // (today falls between its start and end dates AND it has a linked template).
+  getActiveEventData(): SiteData | null {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const events = this.loadCalendarEvents();
+    const templates = this.loadTemplates();
+
+    for (const ev of events) {
+      if (!ev.templateId) continue;
+      const start = parseLocalDate(ev.start);
+      const end   = parseLocalDate(ev.end);
+      if (today >= start && today <= end) {
+        const template = templates.find(t => t.id === ev.templateId);
+        if (template) return template.siteData;
+      }
+    }
+    return null;
+  }
+
+  // Returns the next upcoming calendar event (with or without a template).
+  getNextUpcomingEvent(): CalendarEvent | null {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.loadCalendarEvents()
+      .filter(ev => parseLocalDate(ev.start) > today)
+      .sort((a, b) => a.start.localeCompare(b.start))[0] ?? null;
+  }
+
+  // Legacy — kept so old specs don't break; use getActiveEventData() instead.
+  getPublishedData(): SiteData | null { return this.getActiveEventData(); }
+  publishSiteData(data: SiteData): void { this.saveSiteData(data); }
+  isPublished(_data: SiteData): boolean { return false; }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ViewEncapsulation } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EventService, defaultData } from '../../shared/event.service';
@@ -22,7 +22,7 @@ export const CAT_ORDER = ['Core', 'About'];
   styleUrl: './eventbuilder.css',
   encapsulation: ViewEncapsulation.None,
 })
-export class EventbuilderComponent implements OnInit {
+export class EventbuilderComponent implements OnInit, OnDestroy {
   private svc    = inject(EventService);
   private router = inject(Router);
 
@@ -48,11 +48,18 @@ export class EventbuilderComponent implements OnInit {
   activeTab    = signal<'content' | 'theme'>('content');
   activeSec    = signal<string | null>(null);
   showModal    = signal(false);
-  isPublished  = signal(false);
+  isDraftSaved = signal(true);
   toastMsg     = signal('');
   toastWarn    = signal(false);
   toastTimer: any;
   saveTimer:  any;
+
+  // Split button dropdown
+  saveMenuOpen = signal(false);
+
+  // Publish-as-template modal
+  showPublishModal = signal(false);
+  templateName     = signal('');
 
   // Drag state
   dragSrcId   = signal<string | null>(null);
@@ -73,11 +80,23 @@ export class EventbuilderComponent implements OnInit {
     }));
   });
 
+  private handleDocClick = (e: MouseEvent): void => {
+    if (!(e.target as HTMLElement).closest('.split-btn')) {
+      this.saveMenuOpen.set(false);
+    }
+  };
+
   ngOnInit(): void {
     const data = this.svc.loadSiteData();
     this.SD.set(data);
-    this.isPublished.set(this.svc.isPublished(data));
     if (data.sections.length > 0) this.activeSec.set(data.sections[0].id);
+    document.addEventListener('click', this.handleDocClick);
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('click', this.handleDocClick);
+    clearTimeout(this.saveTimer);
+    clearTimeout(this.toastTimer);
   }
 
   // ── Tab / Layout / Section helpers ─────────────────────────────────────────
@@ -122,7 +141,6 @@ export class EventbuilderComponent implements OnInit {
   }
 
   setBool(secId: string, key: string, val: boolean): void { this.setField(secId, key, val); }
-
   setImgPos(secId: string, pos: string): void { this.setField(secId, 'imgPos', pos); }
 
   setThemeField(key: keyof SiteData['theme'], val: string): void {
@@ -151,8 +169,7 @@ export class EventbuilderComponent implements OnInit {
   removeStat(secId: string, i: number): void {
     const sec = this.getSec(secId);
     if (!sec) return;
-    const stats = sec.data['stats'].filter((_: any, idx: number) => idx !== i);
-    this.setField(secId, 'stats', stats);
+    this.setField(secId, 'stats', sec.data['stats'].filter((_: any, idx: number) => idx !== i));
   }
 
   // ── Features helpers ───────────────────────────────────────────────────────
@@ -255,20 +272,58 @@ export class EventbuilderComponent implements OnInit {
   onDragEnd(): void { this.dragSrcId.set(null); this.dragOverId.set(null); }
 
   // ── Save / Publish ─────────────────────────────────────────────────────────
+  /** Debounced auto-save triggered by every field change. Updates the draft (preview). */
   autoSave(): void {
-    this.isPublished.set(false);
+    this.isDraftSaved.set(false);
     clearTimeout(this.saveTimer);
-    this.saveTimer = setTimeout(() => { this.svc.saveSiteData(this.SD()); }, 400);
+    this.saveTimer = setTimeout(() => {
+      this.svc.saveSiteData(this.SD());
+      this.isDraftSaved.set(true);
+    }, 400);
   }
 
-  publishSite(): void {
-    this.svc.publishSiteData(this.SD());
-    this.isPublished.set(true);
-    this.toast('✦ Event page published successfully!');
+  /** Explicit "Save Draft" — saves immediately and shows feedback. */
+  saveDraft(): void {
+    clearTimeout(this.saveTimer);
+    this.svc.saveSiteData(this.SD());
+    this.isDraftSaved.set(true);
+    this.saveMenuOpen.set(false);
+    this.toast('✓ Draft saved — visible in Preview');
+  }
+
+  toggleSaveMenu(e: MouseEvent): void {
+    e.stopPropagation();
+    this.saveMenuOpen.update(v => !v);
+  }
+
+  /** Opens the "Publish as Template" modal. */
+  openPublishModal(): void {
+    this.saveMenuOpen.set(false);
+    // Pre-fill template name from hero headline if available
+    const hero = this.SD().sections.find(s => s.type === 'hero');
+    const heroTitle = hero?.data['headline']?.trim() || hero?.data['navBrand']?.trim() || '';
+    this.templateName.set(heroTitle);
+    this.showPublishModal.set(true);
+  }
+
+  closePublishModal(): void { this.showPublishModal.set(false); }
+
+  /** Saves current state as a named template in the templates store. */
+  publishAsTemplate(): void {
+    const name = this.templateName().trim();
+    if (!name) { this.toast('Please give this template a name.', true); return; }
+    // Force-save the draft first
+    this.svc.saveSiteData(this.SD());
+    this.isDraftSaved.set(true);
+    // Save as template
+    this.svc.saveTemplate(name, this.SD());
+    this.closePublishModal();
+    this.toast(`🏷 Template "${name}" saved! Link it to an event in the Calendar.`);
   }
 
   openPreview(): void {
     this.svc.saveSiteData(this.SD());
+    this.isDraftSaved.set(true);
     window.open('/client/preview', '_blank');
   }
 
@@ -277,7 +332,7 @@ export class EventbuilderComponent implements OnInit {
     this.toastMsg.set(msg);
     this.toastWarn.set(warn);
     clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.toastMsg.set(''), 2400);
+    this.toastTimer = setTimeout(() => this.toastMsg.set(''), 2800);
   }
 
   // Template helpers

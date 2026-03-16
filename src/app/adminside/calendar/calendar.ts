@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EventService } from '../../shared/event.service';
-import { CalendarEvent, CalDay } from '../../shared/event.model';
+import { CalendarEvent, CalDay, EventTemplate } from '../../shared/event.model';
 
 export const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -31,6 +31,7 @@ export class CalendarComponent implements OnInit {
 
   today   = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
   events  = signal<CalendarEvent[]>([]);
+  templates = signal<EventTemplate[]>([]);
 
   viewDate  = signal(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
   miniDate  = signal(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
@@ -46,7 +47,6 @@ export class CalendarComponent implements OnInit {
     const last  = new Date(year, month + 1, 0);
     const cells: DayCell[] = [];
 
-    // fill leading blanks
     for (let i = 0; i < first.getDay(); i++) {
       const d = new Date(year, month, -first.getDay() + i + 1);
       cells.push(this.makeCell(d, true, evs));
@@ -98,18 +98,24 @@ export class CalendarComponent implements OnInit {
       return s.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     return s.toLocaleDateString('en-PH', { month: 'long', day: 'numeric' }) + ' – ' + e.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
   });
+  panelTemplateName = computed(() => {
+    const ev = this.activePanel();
+    if (!ev?.templateId) return null;
+    return this.templates().find(t => t.id === ev.templateId)?.name ?? null;
+  });
 
   // Modal
-  showModal   = signal(false);
-  editingId   = signal<string | null>(null);
-  modalTitle  = signal('New Event');
-  evTitle     = signal('');
-  evDesc      = signal('');
-  evStart     = signal('');
-  evEnd       = signal('');
-  evLoc       = signal('');
-  evColor     = signal('ev-blue');
-  toastMsg    = signal('');
+  showModal     = signal(false);
+  editingId     = signal<string | null>(null);
+  modalTitle    = signal('New Event');
+  evTitle       = signal('');
+  evDesc        = signal('');
+  evStart       = signal('');
+  evEnd         = signal('');
+  evLoc         = signal('');
+  evColor       = signal('ev-blue');
+  evTemplateId  = signal('');
+  toastMsg      = signal('');
   toastTimer: any;
 
   readonly COLOR_LABELS: Record<string, string> = {
@@ -124,6 +130,7 @@ export class CalendarComponent implements OnInit {
 
   ngOnInit(): void {
     this.events.set(this.svc.loadCalendarEvents());
+    this.templates.set(this.svc.loadTemplates());
   }
 
   private makeCell(date: Date, otherMonth: boolean, evs: CalendarEvent[]): DayCell {
@@ -199,6 +206,8 @@ export class CalendarComponent implements OnInit {
   }
 
   openAddModal(dateStr: string | null, evData?: CalendarEvent): void {
+    // Refresh templates in case new ones were published
+    this.templates.set(this.svc.loadTemplates());
     this.editingId.set(evData?.id ?? null);
     this.modalTitle.set(evData ? 'Edit Event' : 'New Event');
     this.evTitle.set(evData?.title ?? '');
@@ -207,10 +216,20 @@ export class CalendarComponent implements OnInit {
     this.evEnd.set(evData?.end ?? (dateStr || this.toStr(this.today)));
     this.evLoc.set(evData?.loc ?? '');
     this.evColor.set(evData?.color ?? 'ev-blue');
+    this.evTemplateId.set(evData?.templateId ?? '');
     this.showModal.set(true);
   }
 
   closeModal(): void { this.showModal.set(false); }
+
+  /** When a template is selected, auto-fill the title from its name if title is empty. */
+  onTemplateSelect(id: string): void {
+    this.evTemplateId.set(id);
+    if (id && !this.evTitle().trim()) {
+      const t = this.templates().find(t => t.id === id);
+      if (t) this.evTitle.set(t.name);
+    }
+  }
 
   saveEvent(): void {
     const title = this.evTitle().trim();
@@ -218,21 +237,23 @@ export class CalendarComponent implements OnInit {
     const end   = this.evEnd();
     if (!title) { this.toast('Please enter an event title.'); return; }
     if (!start) { this.toast('Please set a start date.'); return; }
-    const finalEnd = end && end >= start ? end : start;
+    const finalEnd   = end && end >= start ? end : start;
+    const templateId = this.evTemplateId() || undefined;
 
     const id = this.editingId();
     if (id) {
       this.events.update(evs => evs.map(e => e.id === id
-        ? { ...e, title, desc: this.evDesc().trim(), start, end: finalEnd, color: this.evColor(), loc: this.evLoc().trim() }
+        ? { ...e, title, desc: this.evDesc().trim(), start, end: finalEnd, color: this.evColor(), loc: this.evLoc().trim(), templateId }
         : e));
-      this.toast('Event updated!');
+      this.toast(templateId ? '✦ Event updated — live page will activate on schedule!' : 'Event updated!');
     } else {
       const newEv: CalendarEvent = {
         id: 'e' + Date.now(), title, desc: this.evDesc().trim(),
         start, end: finalEnd, color: this.evColor(), loc: this.evLoc().trim(),
+        templateId,
       };
       this.events.update(evs => [...evs, newEv]);
-      this.toast('✦ Event added!');
+      this.toast(templateId ? '✦ Event scheduled — live page activates on start date!' : '✦ Event added!');
     }
     this.svc.saveCalendarEvents(this.events());
     this.closeModal();
@@ -245,9 +266,14 @@ export class CalendarComponent implements OnInit {
     return this.parseDate(ev.start).getDate();
   }
 
+  templateName(ev: CalendarEvent): string | null {
+    if (!ev.templateId) return null;
+    return this.templates().find(t => t.id === ev.templateId)?.name ?? null;
+  }
+
   toast(msg: string): void {
     this.toastMsg.set(msg);
     clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.toastMsg.set(''), 2400);
+    this.toastTimer = setTimeout(() => this.toastMsg.set(''), 2800);
   }
 }

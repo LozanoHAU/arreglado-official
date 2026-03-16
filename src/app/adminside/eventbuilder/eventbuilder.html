@@ -12,10 +12,24 @@
     <button class="tab-btn" [class.active]="activeTab()==='theme'"   (click)="switchTab('theme')">Theme</button>
   </div>
   <div class="topbar-right">
-    <div class="status-dot" [class.published]="isPublished()"></div>
-    <span class="status-txt">{{ isPublished() ? 'Published' : 'Unsaved changes' }}</span>
+    <div class="status-dot" [class.saved]="isDraftSaved()"></div>
+    <span class="status-txt">{{ isDraftSaved() ? 'Draft saved' : 'Saving…' }}</span>
     <button class="btn btn-outline" (click)="openPreview()">Preview ↗</button>
-    <button class="btn btn-publish" (click)="publishSite()">Publish Event</button>
+
+    <!-- Split Save Button -->
+    <div class="split-btn">
+      <button class="btn btn-publish split-main" (click)="saveDraft()">Save Draft</button>
+      <button class="split-arrow" (click)="toggleSaveMenu($event)" title="More options">▾</button>
+      <div class="split-menu" [class.open]="saveMenuOpen()">
+        <button class="split-menu-item" (click)="openPublishModal()">
+          <span class="split-menu-icon">🏷</span>
+          <span>
+            <strong>Publish as Template</strong>
+            <em>Save this layout for use in the Calendar</em>
+          </span>
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -141,7 +155,6 @@
   <div class="editor-area" id="editor-area">
 
     @if (activeTab() === 'theme') {
-      <!-- ── THEME EDITOR ── -->
       <div class="sec-header">
         <div class="sec-header-text"><h2>Theme &amp; Colors</h2><p>Global appearance settings — applied across all sections.</p></div>
       </div>
@@ -173,12 +186,12 @@
               <div>
                 <label class="fl">Barangay / Site Name</label>
                 <input class="fi" [value]="sec.data['navBrand']" (input)="setField(sec.id,'navBrand',$any($event.target).value)" placeholder="Barangay Pandacaqui"/>
-                <div class="fhint">Shown in the navigation bar (e.g. "Barangay Pandacaqui")</div>
+                <div class="fhint">Shown in the navigation bar</div>
               </div>
               <div>
                 <label class="fl">Event Label</label>
                 <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)" placeholder="Upcoming Event"/>
-                <div class="fhint">Short label above the headline (e.g. "Upcoming Event" or "Free Vaccination Drive")</div>
+                <div class="fhint">Short label above the headline</div>
               </div>
             </div>
           </div>
@@ -198,7 +211,7 @@
               <div>
                 <label class="fl">CTA Button Text</label>
                 <input class="fi" [value]="sec.data['cta']" (input)="setField(sec.id,'cta',$any($event.target).value)" placeholder="Register Now"/>
-                <div class="fhint">Leave blank to hide the button (e.g. "Register Now" or "Join Us")</div>
+                <div class="fhint">Leave blank to hide the button</div>
               </div>
               <div>
                 <label class="fl">CTA Button Link</label>
@@ -228,7 +241,6 @@
               <div>
                 <label class="fl">Eyebrow Label</label>
                 <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
-                <div class="fhint">Small label above the title</div>
               </div>
               <div>
                 <label class="fl">Section Title</label>
@@ -260,15 +272,13 @@
               </div>
             </div>
             <div class="fg">
-              <div>
-                <label class="fl">Section Image</label>
-                <div class="img-drop">
-                  <input type="file" accept="image/*" (change)="handleImg(sec.id,'img',$event)"/>
-                  @if (sec.data['img']) { <img class="img-preview" [src]="sec.data['img']" alt=""/> }
-                  <div class="img-drop-icon" [style.display]="sec.data['img'] ? 'none' : ''">🖼</div>
-                  <div class="img-drop-txt" [style.display]="sec.data['img'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
-                  <div class="img-overlay">🔄 Replace</div>
-                </div>
+              <label class="fl">Section Image</label>
+              <div class="img-drop">
+                <input type="file" accept="image/*" (change)="handleImg(sec.id,'img',$event)"/>
+                @if (sec.data['img']) { <img class="img-preview" [src]="sec.data['img']" alt=""/> }
+                <div class="img-drop-icon" [style.display]="sec.data['img'] ? 'none' : ''">🖼</div>
+                <div class="img-drop-txt" [style.display]="sec.data['img'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
+                <div class="img-overlay">🔄 Replace</div>
               </div>
             </div>
           </div>
@@ -280,7 +290,6 @@
             <div>
               <label class="fl">Eyebrow Label</label>
               <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
-              <div class="fhint">Small label above the headline</div>
             </div>
             <div style="height:10px"></div>
             <div>
@@ -310,15 +319,13 @@
             }
           </div>
           <div class="fg">
-            <div>
-              <label class="fl">Banner Image (optional, full-width)</label>
-              <div class="img-drop">
-                <input type="file" accept="image/*" (change)="handleImg(sec.id,'bannerImg',$event)"/>
-                @if (sec.data['bannerImg']) { <img class="img-preview" [src]="sec.data['bannerImg']" alt=""/> }
-                <div class="img-drop-icon" [style.display]="sec.data['bannerImg'] ? 'none' : ''">🖼</div>
-                <div class="img-drop-txt" [style.display]="sec.data['bannerImg'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
-                <div class="img-overlay">🔄 Replace</div>
-              </div>
+            <label class="fl">Banner Image (optional, full-width)</label>
+            <div class="img-drop">
+              <input type="file" accept="image/*" (change)="handleImg(sec.id,'bannerImg',$event)"/>
+              @if (sec.data['bannerImg']) { <img class="img-preview" [src]="sec.data['bannerImg']" alt=""/> }
+              <div class="img-drop-icon" [style.display]="sec.data['bannerImg'] ? 'none' : ''">🖼</div>
+              <div class="img-drop-txt" [style.display]="sec.data['bannerImg'] ? 'none' : ''">Click or drag · <strong>PNG / JPG / WEBP</strong></div>
+              <div class="img-overlay">🔄 Replace</div>
             </div>
           </div>
         }
@@ -365,10 +372,8 @@
         <!-- ── FEATURES ── -->
         @if (sec.type === 'features') {
           <div class="fg">
-            <div>
-              <label class="fl">Section Title</label>
-              <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
-            </div>
+            <label class="fl">Section Title</label>
+            <input class="fi" [value]="sec.data['title']" (input)="setField(sec.id,'title',$any($event.target).value)"/>
           </div>
           <div class="feat-list">
             @for (item of sec.data['items']; track $index) {
@@ -406,7 +411,6 @@
               <div>
                 <label class="fl">Eyebrow Label</label>
                 <input class="fi" [value]="sec.data['eyebrow']" (input)="setField(sec.id,'eyebrow',$any($event.target).value)"/>
-                <div class="fhint">Small label above the form title</div>
               </div>
               <div>
                 <label class="fl">Form Title</label>
@@ -524,10 +528,8 @@
                 </div>
               </div>
               <div class="fg">
-                <div>
-                  <label class="fl">Footer Copyright</label>
-                  <input class="fi" [value]="sec.data['footerCopy']" (input)="setField(sec.id,'footerCopy',$any($event.target).value)" placeholder="e.g. © 2025 Barangay Pandacaqui. All rights reserved."/>
-                </div>
+                <label class="fl">Footer Copyright</label>
+                <input class="fi" [value]="sec.data['footerCopy']" (input)="setField(sec.id,'footerCopy',$any($event.target).value)" placeholder="© 2026 Barangay Pandacaqui. All rights reserved."/>
               </div>
             </div>
             <div class="fg">
@@ -535,7 +537,6 @@
               <div>
                 <label class="fl">Facebook URL</label>
                 <input class="fi" [value]="sec.data['twitter']" (input)="setField(sec.id,'twitter',$any($event.target).value)"/>
-                <div class="fhint">Link to your barangay Facebook page</div>
               </div>
               <div style="height:8px"></div>
               <div>
@@ -592,6 +593,40 @@
     </div>
   </div>
 </div>
+
+<!-- PUBLISH AS TEMPLATE MODAL -->
+@if (showPublishModal()) {
+  <div class="modal-bg open" (click)="$event.target === $event.currentTarget && closePublishModal()">
+    <div class="modal-box" style="width:440px">
+      <div class="modal-mast">
+        <div>
+          <h3>🏷 Publish as Template</h3>
+          <p>Save this layout so it can be linked to calendar events</p>
+        </div>
+        <button class="modal-close" (click)="closePublishModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="fg">
+          <label class="fl">Template Name</label>
+          <input class="fi" [ngModel]="templateName()" (ngModelChange)="templateName.set($event)"
+            placeholder="e.g. Free Vaccination Drive — March 2026"
+            (keyup.enter)="publishAsTemplate()"/>
+          <div class="fhint">This name will appear in the Calendar's template selector. Be specific — include the event type and month so you can tell templates apart.</div>
+        </div>
+        <div class="publish-info-box">
+          <div class="publish-info-icon">ℹ️</div>
+          <div class="publish-info-text">
+            After saving, go to the <strong>Event Calendar</strong>, create or edit an event, and choose this template from the dropdown. The public event page will go live automatically during the event's date range.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closePublishModal()">Cancel</button>
+        <button class="btn btn-publish" (click)="publishAsTemplate()">Save Template</button>
+      </div>
+    </div>
+  </div>
+}
 
 <!-- TOAST -->
 <div class="toast" [class.show]="toastMsg()" [class.warn]="toastWarn()">{{ toastMsg() }}</div>

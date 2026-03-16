@@ -58,6 +58,9 @@
     <!-- Upcoming -->
     <div class="sb-section">
       <div class="sb-label">Upcoming</div>
+      @if (upcoming().length === 0) {
+        <div class="no-upcoming">No upcoming events. Click <strong>+ New Event</strong> to get started.</div>
+      }
       <div id="upcoming-list">
         @for (ev of upcoming(); track ev.id) {
           <div class="upcoming-item" (click)="showPanel(ev)">
@@ -69,6 +72,9 @@
             <div class="upcoming-info">
               <div class="upcoming-name">{{ ev.title }}</div>
               <div class="upcoming-meta">{{ ev.loc || 'Barangay' }}</div>
+              @if (templateName(ev)) {
+                <div class="upcoming-tpl-badge">🏷 {{ templateName(ev) }}</div>
+              }
             </div>
           </div>
         }
@@ -119,7 +125,7 @@
           </div>
           <div class="day-events">
             @for (item of cell.events; track item.ev.id) {
-              <div class="ev {{ item.cls }}" (click)="$event.stopPropagation(); showPanel(item.ev)">
+              <div class="ev {{ item.cls }}" [class.has-tpl]="!!item.ev.templateId" (click)="$event.stopPropagation(); showPanel(item.ev)">
                 {{ item.ev.title }}
               </div>
             }
@@ -164,6 +170,22 @@
           <div class="panel-row-val">{{ ev.desc }}</div>
         </div>
       }
+
+      <!-- Live Page Status -->
+      <div class="panel-row panel-live-row">
+        <div class="panel-row-label">🌐 Public Event Page</div>
+        @if (panelTemplateName()) {
+          <div class="panel-live-active">
+            <span class="panel-live-dot"></span>
+            Linked to template: <strong>{{ panelTemplateName() }}</strong>
+          </div>
+          <div class="panel-live-hint">The public event page will display this template during the event's date range.</div>
+        } @else {
+          <div class="panel-live-none">No template linked — event page will stay blank during this event.</div>
+          <div class="panel-live-hint">Edit this event and select a template to activate the live page.</div>
+        }
+      </div>
+
       <div class="panel-row" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
         <button class="btn btn-delete" (click)="deleteEvent(ev.id)">🗑 Delete Event</button>
       </div>
@@ -184,6 +206,33 @@
         <button class="modal-close" (click)="closeModal()">✕</button>
       </div>
       <div class="modal-body">
+
+        <!-- Template Selector — top of form -->
+        <div class="fg tpl-selector-fg">
+          <label class="fl">🏷 Event Page Template</label>
+          @if (templates().length === 0) {
+            <div class="tpl-empty-hint">
+              No templates saved yet. Go to the <a routerLink="/admin/eventbuilder" (click)="closeModal()">Event Builder</a> and use <em>Publish as Template</em> to create one.
+            </div>
+          } @else {
+            <select class="fsel" [ngModel]="evTemplateId()" (ngModelChange)="onTemplateSelect($event)">
+              <option value="">— No template (calendar marker only) —</option>
+              @for (t of templates(); track t.id) {
+                <option [value]="t.id">{{ t.name }}</option>
+              }
+            </select>
+            <div class="fhint tpl-hint">
+              @if (evTemplateId()) {
+                ✅ The public event page will show this template while the event is active.
+              } @else {
+                Without a template, the event appears on the calendar but the public page stays blank.
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-divider"></div>
+
         <div class="fg">
           <label class="fl">Event Title</label>
           <input class="fi" [ngModel]="evTitle()" (ngModelChange)="evTitle.set($event)" placeholder="e.g. Free Vaccination Drive"/>

@@ -7,6 +7,7 @@ export interface CalendarEvent {
   end: string;   // 'YYYY-MM-DD'
   color: string; // 'ev-blue' | 'ev-red' | 'ev-green' | 'ev-gold' | 'ev-purple' | 'ev-teal'
   loc: string;
+  templateId?: string; // links to EventTemplate → drives the live eventpage
 }
 
 export interface CalDay {
@@ -44,6 +45,17 @@ export interface SiteData {
   layout: 'agency' | 'minimal' | 'bold';
   sections: SiteSection[];
   theme: SiteTheme;
+}
+
+// ─── EVENT TEMPLATES ─────────────────────────────────────────────────────────
+// Saved from Event Builder via "Publish as Template".
+// Selected in the Calendar when creating/editing an event.
+// The live eventpage renders whichever template's CalendarEvent is active today.
+export interface EventTemplate {
+  id: string;
+  name: string;
+  createdAt: string; // ISO date string
+  siteData: SiteData;
 }
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────

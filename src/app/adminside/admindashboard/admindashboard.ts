@@ -1,8 +1,13 @@
-import { Component, OnInit, inject, signal, computed, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewEncapsulation } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { EventService } from '../../shared/event.service';
-import { RecentEvent } from '../../shared/event.model';
+import { CalendarEvent, RecentEvent } from '../../shared/event.model';
 import { TitleCasePipe } from '@angular/common';
+
+const COLOR_HEX: Record<string, string> = {
+  'ev-blue': '#3b87d4', 'ev-red': '#D12A2F', 'ev-green': '#2C7A3B',
+  'ev-gold': '#E5A822', 'ev-purple': '#7c4dff', 'ev-teal': '#00897b',
+};
 
 @Component({
   selector: 'app-admindashboard',
@@ -17,21 +22,36 @@ export class AdmindashboardComponent implements OnInit {
   currentMonth = new Date().toLocaleString('en-US', { month: 'short' });
   currentYear  = new Date().getFullYear();
 
-  totalEvents   = signal(4);
-  publishedCount = signal(2);
+  totalEvents    = signal(0);
+  publishedCount = signal(0); // events with a linked template
+  templateCount  = signal(0); // saved templates
 
-  recentEvents: RecentEvent[] = [
-    { name: 'Free Vaccination Drive — Purok 1 to 4',       date: 'Mar 15, 2026 · Barangay Hall',          status: 'published', color: '#2C7A3B' },
-    { name: 'Barangay Fiesta Preparation Meeting',          date: 'Mar 20, 2026 · Multi-purpose Hall',     status: 'draft',     color: '#E5A822' },
-    { name: 'Senior Citizens Health Check & Orientation',   date: 'Mar 25, 2026 · Barangay Health Center', status: 'published', color: '#2C7A3B' },
-    { name: 'Youth Livelihood Skills Training',             date: 'Apr 3, 2026 · Barangay Hall',           status: 'draft',     color: '#E5A822' },
-  ];
+  recentEvents: RecentEvent[] = [];
 
   ngOnInit(): void {
-    // Update stats from real service data
-    const data = this.eventSvc.loadSiteData();
-    const published = this.eventSvc.getPublishedData();
-    this.totalEvents.set(data.sections.length || 4);
-    this.publishedCount.set(published ? 2 : 0);
+    const calEvents  = this.eventSvc.loadCalendarEvents();
+    const templates  = this.eventSvc.loadTemplates();
+
+    this.totalEvents.set(calEvents.length);
+    this.publishedCount.set(calEvents.filter(e => !!e.templateId).length);
+    this.templateCount.set(templates.length);
+
+    // Most recent events first (by start date), up to 4
+    this.recentEvents = [...calEvents]
+      .sort((a, b) => b.start.localeCompare(a.start))
+      .slice(0, 4)
+      .map(ev => this.toRecentEvent(ev));
+  }
+
+  private toRecentEvent(ev: CalendarEvent): RecentEvent {
+    const [y, m, d] = ev.start.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return {
+      name: ev.title,
+      date: ev.loc ? `${dateStr} · ${ev.loc}` : dateStr,
+      status: ev.templateId ? 'published' : 'draft',
+      color: COLOR_HEX[ev.color] ?? '#2C7A3B',
+    };
   }
 }

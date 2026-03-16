@@ -82,6 +82,16 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .card.card-gold::before { background: linear-gradient(90deg, var(--gold), #f0c040); opacity: 1; }
 .card.card-slate::before { background: linear-gradient(90deg, #8a9e92, #b0bdb4); opacity: 1; }
 
+/* ── HOW IT WORKS FLOW ── */
+.flow-steps { display: flex; align-items: flex-start; gap: 0; margin-bottom: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.flow-step { flex: 1; padding: 20px 22px; display: flex; gap: 14px; align-items: flex-start; }
+.flow-step:not(:last-child) { border-right: 1px solid var(--border); }
+.flow-step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: .85rem; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; }
+.flow-step-body { flex: 1; }
+.flow-step-body strong { font-family: 'Oswald', sans-serif; font-size: .85rem; letter-spacing: .03em; color: var(--text); display: block; margin-bottom: 4px; }
+.flow-step-body span { font-size: .75rem; color: var(--muted); line-height: 1.55; }
+.flow-arrow { display: none; } /* hidden — border handles separation */
+
 /* ── RECENT EVENTS ── */
 .recent-list { display: flex; flex-direction: column; gap: 10px; }
 .recent-item { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; transition: all .14s; cursor: pointer; text-decoration: none; color: inherit; }
@@ -93,6 +103,15 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .recent-status { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
 .recent-status.published { background: rgba(44,122,59,.1); color: var(--accent); }
 .recent-status.draft { background: rgba(229,168,34,.12); color: #9a6f00; }
+
+/* ── RECENT EMPTY STATE ── */
+.recent-empty { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 28px 24px; display: flex; align-items: center; gap: 16px; }
+.recent-empty-icon { font-size: 2rem; flex-shrink: 0; }
+.recent-empty-text { display: flex; flex-direction: column; gap: 3px; }
+.recent-empty-text strong { font-family: 'Oswald', sans-serif; font-size: .9rem; letter-spacing: .03em; color: var(--text); }
+.recent-empty-text span { font-size: .8rem; color: var(--muted); line-height: 1.55; }
+.recent-empty-text a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.recent-empty-text a:hover { text-decoration: underline; }
 
 /* ── QUICK TIPS ── */
 .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -110,6 +129,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 @media (max-width: 900px) {
   .cards { grid-template-columns: 1fr; }
   .tips-grid { grid-template-columns: 1fr; }
+  .flow-steps { flex-direction: column; }
+  .flow-step:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
   .hero-stats { gap: 18px; }
   .content { padding: 24px 20px; }
   .dashboard-hero { padding: 36px 20px 32px; }

@@ -28,15 +28,15 @@
     <div class="hero-stats">
       <div class="hero-stat">
         <div class="hero-stat-num">{{ totalEvents() }}</div>
-        <div class="hero-stat-lbl">Events Created</div>
+        <div class="hero-stat-lbl">Calendar Events</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-num">{{ publishedCount() }}</div>
-        <div class="hero-stat-lbl">Published</div>
+        <div class="hero-stat-lbl">With Live Page</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-num">{{ currentMonth }}</div>
-        <div class="hero-stat-lbl">Current Month</div>
+        <div class="hero-stat-num">{{ templateCount() }}</div>
+        <div class="hero-stat-lbl">Saved Templates</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-num">{{ currentYear }}</div>
@@ -57,10 +57,10 @@
         <div class="card-top">
           <div class="card-icon-wrap green">🏗️</div>
           <div class="card-title">Event Builder</div>
-          <div class="card-desc">Design and publish beautiful event pages for your barangay. Add sections, registration forms, schedules, and more — no coding needed.</div>
+          <div class="card-desc">Design your event page — add sections, registration forms, schedules, and more. Save as a draft to preview it, or publish as a template to link it to a calendar event.</div>
           <div class="card-tags">
             <span class="tag green">Page Editor</span>
-            <span class="tag green">Registration</span>
+            <span class="tag green">Templates</span>
             <span class="tag">Sections</span>
           </div>
         </div>
@@ -75,11 +75,11 @@
         <div class="card-top">
           <div class="card-icon-wrap gold">📅</div>
           <div class="card-title">Event Calendar</div>
-          <div class="card-desc">View all your barangay events on a full monthly calendar. See upcoming vaccinations, contests, meetings, and community activities at a glance.</div>
+          <div class="card-desc">Schedule events and link them to event page templates. When a calendar event is active today, its template automatically appears on the public event page.</div>
           <div class="card-tags">
             <span class="tag gold">Monthly View</span>
             <span class="tag gold">Schedule</span>
-            <span class="tag">Overview</span>
+            <span class="tag">Live Page</span>
           </div>
         </div>
         <div class="card-footer">
@@ -109,20 +109,60 @@
 
     </div>
 
-    <!-- RECENT EVENTS -->
-    <div class="section-label">Recent Events</div>
-    <div class="recent-list">
-      @for (ev of recentEvents; track ev.name) {
-        <a class="recent-item" routerLink="/admin/eventbuilder">
-          <div class="recent-dot" [style.background]="ev.color"></div>
-          <div class="recent-info">
-            <div class="recent-name">{{ ev.name }}</div>
-            <div class="recent-meta">{{ ev.date }}</div>
-          </div>
-          <span class="recent-status" [class]="ev.status">{{ ev.status | titlecase }}</span>
-        </a>
-      }
+    <!-- HOW IT WORKS -->
+    <div class="section-label">How It Works</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-body">
+          <strong>Build in Event Builder</strong>
+          <span>Design your event page with sections, forms, and images. Save as a draft to preview it anytime.</span>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-body">
+          <strong>Publish as Template</strong>
+          <span>When satisfied, publish as a named template. Templates can be reused for recurring events.</span>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-body">
+          <strong>Schedule in Calendar</strong>
+          <span>Create a calendar event, pick a template, and set the date range. The public event page goes live automatically during those dates.</span>
+        </div>
+      </div>
     </div>
+
+    <!-- RECENT EVENTS -->
+    <div class="section-label" style="margin-top:36px">Recent Calendar Events</div>
+    @if (recentEvents.length === 0) {
+      <div class="recent-empty">
+        <div class="recent-empty-icon">📅</div>
+        <div class="recent-empty-text">
+          <strong>No events yet</strong>
+          <span>Go to the <a routerLink="/admin/calendar">Event Calendar</a> to schedule your first barangay event.</span>
+        </div>
+      </div>
+    } @else {
+      <div class="recent-list">
+        @for (ev of recentEvents; track ev.name) {
+          <a class="recent-item" routerLink="/admin/calendar">
+            <div class="recent-dot" [style.background]="ev.color"></div>
+            <div class="recent-info">
+              <div class="recent-name">{{ ev.name }}</div>
+              <div class="recent-meta">{{ ev.date }}</div>
+            </div>
+            <span class="recent-status" [class]="ev.status">
+              {{ ev.status === 'published' ? 'Has Page' : 'No Page' }}
+            </span>
+          </a>
+        }
+      </div>
+    }
 
     <!-- QUICK TIPS -->
     <div class="section-label" style="margin-top:36px">Quick Tips</div>
@@ -135,24 +175,24 @@
         </div>
       </div>
       <div class="tip">
-        <div class="tip-icon">📋</div>
+        <div class="tip-icon">🏷️</div>
         <div class="tip-text">
-          <strong>Add a Registration Form</strong>
-          <span>Use the Form section to collect attendee details. Customize the fields to fit your event — name, purok, mobile number, etc.</span>
+          <strong>Publish as a Template</strong>
+          <span>Use "Publish as Template" in the Event Builder to save your layout. Templates are reusable — great for recurring events like monthly vaccinations.</span>
         </div>
       </div>
       <div class="tip">
         <div class="tip-icon">📅</div>
         <div class="tip-text">
-          <strong>Check the Calendar Often</strong>
-          <span>Use the Event Calendar to avoid scheduling conflicts and see all upcoming barangay activities at a glance.</span>
+          <strong>Link Templates to Calendar</strong>
+          <span>When creating a calendar event, select a template. The public event page will automatically go live during the event's date range.</span>
         </div>
       </div>
       <div class="tip">
-        <div class="tip-icon">🚀</div>
+        <div class="tip-icon">👁️</div>
         <div class="tip-text">
-          <strong>Publish When Ready</strong>
-          <span>Hit "Publish Event" in the Event Builder to make your page live for residents to view. Unpublished pages are safe drafts.</span>
+          <strong>Preview Before You Publish</strong>
+          <span>Use "Preview ↗" in the Event Builder to see exactly how the page will look before linking it to a calendar event.</span>
         </div>
       </div>
     </div>

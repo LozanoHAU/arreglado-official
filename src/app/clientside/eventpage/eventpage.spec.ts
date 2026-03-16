@@ -28,39 +28,100 @@ describe('EventpageComponent', () => {
   let fixture: ComponentFixture<EventpageComponent>;
   let mockService: jasmine.SpyObj<EventService>;
 
-  beforeEach(async () => {
-    mockService = jasmine.createSpyObj('EventService', ['getPublishedData', 'loadSiteData']);
-    mockService.getPublishedData.and.returnValue(MOCK_SITE);
+  describe('when an active event exists', () => {
+    beforeEach(async () => {
+      mockService = jasmine.createSpyObj('EventService', [
+        'getActiveEventData', 'getNextUpcomingEvent', 'loadSiteData'
+      ]);
+      mockService.getActiveEventData.and.returnValue(MOCK_SITE);
+      mockService.getNextUpcomingEvent.and.returnValue(null);
 
-    await TestBed.configureTestingModule({
-      imports: [EventpageComponent],
-      providers: [{ provide: EventService, useValue: mockService }],
-    }).compileComponents();
+      await TestBed.configureTestingModule({
+        imports: [EventpageComponent],
+        providers: [{ provide: EventService, useValue: mockService }],
+      }).compileComponents();
 
-    fixture = TestBed.createComponent(EventpageComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+      fixture = TestBed.createComponent(EventpageComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should create', () => expect(component).toBeTruthy());
+
+    it('should set hasData to true', () => {
+      expect(component.hasData()).toBeTrue();
+    });
+
+    it('should set html signal with rendered content', () => {
+      expect(component.html()).toBeTruthy();
+    });
+
+    it('should call getActiveEventData, not getPublishedData or loadSiteData', () => {
+      expect(mockService.getActiveEventData).toHaveBeenCalled();
+    });
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('when no active event exists', () => {
+    beforeEach(async () => {
+      mockService = jasmine.createSpyObj('EventService', [
+        'getActiveEventData', 'getNextUpcomingEvent', 'loadSiteData'
+      ]);
+      mockService.getActiveEventData.and.returnValue(null);
+      mockService.getNextUpcomingEvent.and.returnValue(null);
+
+      await TestBed.configureTestingModule({
+        imports: [EventpageComponent],
+        providers: [{ provide: EventService, useValue: mockService }],
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(EventpageComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should set hasData to false', () => {
+      expect(component.hasData()).toBeFalse();
+    });
+
+    it('should show the coming soon screen', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.cs-page')).toBeTruthy();
+    });
+
+    it('should call getNextUpcomingEvent to surface upcoming info', () => {
+      expect(mockService.getNextUpcomingEvent).toHaveBeenCalled();
+    });
   });
 
-  it('should set hasData to true when published data exists', () => {
-    expect(component.hasData()).toBeTrue();
-  });
+  describe('when no active event but there is an upcoming one', () => {
+    const upcomingEv = {
+      id: 'u1', title: 'Upcoming Health Fair', desc: '', color: 'ev-green',
+      start: '2026-12-01', end: '2026-12-01', loc: 'Barangay Hall', templateId: 't1',
+    };
 
-  it('should set html signal with sanitized content', () => {
-    expect(component.html()).toBeTruthy();
-  });
+    beforeEach(async () => {
+      mockService = jasmine.createSpyObj('EventService', [
+        'getActiveEventData', 'getNextUpcomingEvent', 'loadSiteData'
+      ]);
+      mockService.getActiveEventData.and.returnValue(null);
+      mockService.getNextUpcomingEvent.and.returnValue(upcomingEv);
 
-  it('should show empty state when no published data', async () => {
-    mockService.getPublishedData.and.returnValue(null as any);
-    fixture = TestBed.createComponent(EventpageComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    expect(component.hasData()).toBeFalse();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.empty-state')).toBeTruthy();
+      await TestBed.configureTestingModule({
+        imports: [EventpageComponent],
+        providers: [{ provide: EventService, useValue: mockService }],
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(EventpageComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should store nextEvent signal', () => {
+      expect(component.nextEvent()).toEqual(upcomingEv);
+    });
+
+    it('should return a formatted date string for next event', () => {
+      expect(component.nextEventDateStr()).toContain('December');
+    });
   });
 });

@@ -1,9 +1,46 @@
 @if (hasData()) {
   <div [innerHTML]="html()"></div>
 } @else {
-  <div class="empty-state">
-    <h1>🏛️ No event published yet</h1>
-    <p>Go to the Event Builder and hit "Publish Event" to make your page live.</p>
-    <a href="/admin/eventbuilder" class="empty-btn">Open Event Builder</a>
+  <div class="cs-page">
+    <!-- Background decoration -->
+    <div class="cs-orb cs-orb-1"></div>
+    <div class="cs-orb cs-orb-2"></div>
+
+    <div class="cs-content">
+      <div class="cs-badge">
+        <span class="cs-badge-dot"></span>
+        No Active Events
+      </div>
+
+      <div class="cs-icon">🏛️</div>
+
+      <h1 class="cs-title">
+        Something's<br><em>in the works.</em>
+      </h1>
+
+      <p class="cs-sub">
+        There are no ongoing barangay events right now.<br>
+        Check back soon for the latest updates from Barangay Pandacaqui.
+      </p>
+
+      @if (nextEvent()) {
+        <div class="cs-next">
+          <div class="cs-next-label">Next Scheduled Event</div>
+          <div class="cs-next-title">{{ nextEvent()!.title }}</div>
+          <div class="cs-next-date">
+            📅 {{ nextEventDateStr() }}
+            @if (nextEvent()!.loc) {
+              &nbsp;·&nbsp; 📍 {{ nextEvent()!.loc }}
+            }
+          </div>
+        </div>
+      }
+
+      <div class="cs-footer">
+        <span>Barangay Pandacaqui</span>
+        <span class="cs-footer-sep">·</span>
+        <span>Powered by Arreglado</span>
+      </div>
+    </div>
   </div>
 }

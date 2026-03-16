@@ -8,6 +8,7 @@ describe('EventbuilderComponent', () => {
   let fixture: ComponentFixture<EventbuilderComponent>;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [EventbuilderComponent],
       providers: [provideRouter(routes)],
@@ -16,6 +17,10 @@ describe('EventbuilderComponent', () => {
     fixture = TestBed.createComponent(EventbuilderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    component.ngOnDestroy();
   });
 
   it('should create', () => {
@@ -52,7 +57,6 @@ describe('EventbuilderComponent', () => {
     component.addSection('about-centered');
     const before = component.SD().sections.length;
     const last = component.SD().sections[before - 1];
-    // bypass confirm
     spyOn(window, 'confirm').and.returnValue(true);
     component.removeSection(last.id);
     expect(component.SD().sections.length).toBe(before - 1);
@@ -81,9 +85,42 @@ describe('EventbuilderComponent', () => {
   });
 
   it('sectionTypes should not allow duplicate unique sections', () => {
-    // hero is unique, already present in default data
     const heroType = component.sectionTypes().flatMap(c => c.items).find(i => i.type === 'hero');
     expect(heroType?.disabled).toBeTrue();
+  });
+
+  it('saveDraft should save to localStorage and mark isDraftSaved true', () => {
+    component.saveDraft();
+    const saved = localStorage.getItem('sf_data');
+    expect(saved).toBeTruthy();
+    expect(component.isDraftSaved()).toBeTrue();
+  });
+
+  it('publishAsTemplate should save a template with a given name', () => {
+    component.templateName.set('My Test Template');
+    component.publishAsTemplate();
+    const raw = localStorage.getItem('ar_templates');
+    const templates = raw ? JSON.parse(raw) : [];
+    expect(templates.length).toBe(1);
+    expect(templates[0].name).toBe('My Test Template');
+  });
+
+  it('publishAsTemplate should toast a warning if name is empty', () => {
+    component.templateName.set('');
+    component.publishAsTemplate();
+    expect(component.toastMsg()).toBeTruthy();
+    expect(component.toastWarn()).toBeTrue();
+  });
+
+  it('openPublishModal should open the publish modal', () => {
+    component.openPublishModal();
+    expect(component.showPublishModal()).toBeTrue();
+  });
+
+  it('closePublishModal should close the publish modal', () => {
+    component.openPublishModal();
+    component.closePublishModal();
+    expect(component.showPublishModal()).toBeFalse();
   });
 
   it('should add and remove a stat from about-stats section', () => {
