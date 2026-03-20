@@ -66,6 +66,26 @@
 
       @if (activeTab() === 'attendance') {
         <div>
+
+          @if (uniqueAttendanceEvents().length > 1) {
+            <div class="notif-filters event-filter-row">
+              <button
+                class="nfilter"
+                [class.active]="eventFilter() === 'all'"
+                (click)="setEventFilter('all')">
+                🗂 All Events
+              </button>
+              @for (evName of uniqueAttendanceEvents(); track evName) {
+                <button
+                  class="nfilter"
+                  [class.active]="eventFilter() === evName"
+                  (click)="setEventFilter(evName)">
+                  {{ evName }}
+                </button>
+              }
+            </div>
+          }
+
           <div class="notif-toolbar">
             <div class="notif-filters">
               @for (f of filterOptions; track f.value) {
