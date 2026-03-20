@@ -1,0 +1,291 @@
+<!-- HERO -->
+<section class="au-hero">
+  <div class="au-hero-orb au-orb-1"></div>
+  <div class="au-hero-orb au-orb-2"></div>
+  <div class="au-hero-content">
+    <div class="au-hero-seal">
+      <div class="au-seal-ring">
+        <div class="au-seal-core">
+          <span class="au-seal-text">BRGY</span>
+          <span class="au-seal-num">2025</span>
+        </div>
+      </div>
+    </div>
+    <div class="au-hero-text">
+      <div class="au-hero-label">Official Barangay Profile</div>
+      <h1 class="au-hero-title">Barangay<br><em>Pandacaqui</em></h1>
+      <p class="au-hero-sub">Municipality of Mexico · Province of Pampanga · Region III — Central Luzon</p>
+      <div class="au-hero-stats">
+        <div class="au-hstat">
+          <span class="au-hstat-num">~8,500</span>
+          <span class="au-hstat-lbl">Residents</span>
+        </div>
+        <div class="au-hstat-div"></div>
+        <div class="au-hstat">
+          <span class="au-hstat-num">12</span>
+          <span class="au-hstat-lbl">Puroks</span>
+        </div>
+        <div class="au-hstat-div"></div>
+        <div class="au-hstat">
+          <span class="au-hstat-num">2.4 km²</span>
+          <span class="au-hstat-lbl">Land Area</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / HISTORY -->
+<section class="au-about">
+  <div class="au-about-inner">
+    <div class="au-about-text">
+      <div class="au-eyebrow">Our Community</div>
+      <h2>History &amp; Background</h2>
+      <p>Barangay Pandacaqui is one of the barangays of the Municipality of Mexico in the Province of Pampanga, Central Luzon. With a rich agricultural heritage and a close-knit community, Pandacaqui has grown over the decades into a vibrant and progressive barangay.</p>
+      <p>The barangay takes pride in its hardworking residents, fertile lands, and community spirit. Through the collective efforts of its officials and constituents, Pandacaqui continues to strive for sustainable development, improved public services, and a safe and healthy environment for every household.</p>
+      <div class="au-about-tagline">
+        <span>🌾</span> <em>"Magkasama para sa mas maayos na kinabukasan."</em>
+      </div>
+    </div>
+    <div class="au-about-img-col">
+      <div class="au-img-card au-img-main" style="background:linear-gradient(135deg,#1a4d26,#2C7A3B)">
+        <span class="au-img-placeholder-icon">🏡</span>
+        <span class="au-img-placeholder-lbl">Barangay View</span>
+      </div>
+      <div class="au-img-row">
+        <div class="au-img-card au-img-sm" style="background:linear-gradient(135deg,#E5A822,#c88a10)">
+          <span class="au-img-placeholder-icon">🌾</span>
+          <span class="au-img-placeholder-lbl">Agriculture</span>
+        </div>
+        <div class="au-img-card au-img-sm" style="background:linear-gradient(135deg,#3a6ea8,#1e4a7a)">
+          <span class="au-img-placeholder-icon">🏫</span>
+          <span class="au-img-placeholder-lbl">Community</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION & VISION -->
+<section class="au-mv">
+  <div class="au-mv-inner">
+    <div class="au-mv-card au-mission">
+      <div class="au-mv-icon">🎯</div>
+      <h3>Mission</h3>
+      <p>To deliver efficient, transparent, and responsive local governance that promotes the general welfare and development of all residents of Barangay Pandacaqui through inclusive programs, community participation, and sustainable services.</p>
+    </div>
+    <div class="au-mv-div"></div>
+    <div class="au-mv-card au-vision">
+      <div class="au-mv-icon">🌟</div>
+      <h3>Vision</h3>
+      <p>A progressive, peaceful, and self-sustaining barangay where every resident enjoys a safe environment, access to basic services, and equal opportunities for growth and prosperity under a God-centered and community-driven leadership.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="au-services">
+  <div class="au-services-inner">
+    <div class="au-section-head">
+      <div class="au-eyebrow">What We Offer</div>
+      <h2>Barangay Services &amp; Programs</h2>
+      <p>We are committed to providing accessible and quality services to every resident of Pandacaqui.</p>
+    </div>
+    <div class="au-services-grid">
+      @for (svc of services; track svc.title) {
+        <div class="au-svc-card">
+          <div class="au-svc-icon">{{ svc.icon }}</div>
+          <h3>{{ svc.title }}</h3>
+          <p>{{ svc.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- OFFICIALS -->
+<section class="au-officials">
+  <div class="au-officials-inner">
+    <div class="au-section-head">
+      <div class="au-eyebrow">Your Leaders</div>
+      <h2>Barangay Officials</h2>
+      <p>Meet the dedicated public servants leading Barangay Pandacaqui.</p>
+    </div>
+    <div class="au-officials-grid">
+      @for (off of officials; track off.role + off.name) {
+        <div class="au-official-card" [class.au-punong]="off.role === 'Punong Barangay'">
+          <div class="au-official-avatar" [style.background]="off.role === 'Punong Barangay' ? 'linear-gradient(135deg,#2C7A3B,#1a4d24)' : 'linear-gradient(135deg,#E9EFEA,#DDE5E0)'">
+            <span class="au-official-initial">{{ off.name.charAt(0) }}</span>
+          </div>
+          <div class="au-official-info">
+            <div class="au-official-name">{{ off.name }}</div>
+            <div class="au-official-role">{{ off.role }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY PLACEHOLDER -->
+<section class="au-gallery">
+  <div class="au-gallery-inner">
+    <div class="au-section-head">
+      <div class="au-eyebrow">Our Barangay</div>
+      <h2>Community Moments</h2>
+    </div>
+    <div class="au-gallery-grid">
+      <div class="au-gal-item au-gal-lg" style="background:linear-gradient(135deg,#1a4d26 0%,#2C7A3B 100%)">
+        <span class="au-gal-icon">🏛️</span>
+        <span class="au-gal-lbl">Barangay Hall</span>
+      </div>
+      <div class="au-gal-item" style="background:linear-gradient(135deg,#d4a017,#E5A822)">
+        <span class="au-gal-icon">🎉</span>
+        <span class="au-gal-lbl">Fiesta Celebration</span>
+      </div>
+      <div class="au-gal-item" style="background:linear-gradient(135deg,#3a6ea8,#5a8ec8)">
+        <span class="au-gal-icon">💧</span>
+        <span class="au-gal-lbl">Clean Water Project</span>
+      </div>
+      <div class="au-gal-item" style="background:linear-gradient(135deg,#6a4c9c,#8a6cbf)">
+        <span class="au-gal-icon">📚</span>
+        <span class="au-gal-lbl">Youth Programs</span>
+      </div>
+      <div class="au-gal-item" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">
+        <span class="au-gal-icon">🏥</span>
+        <span class="au-gal-lbl">Health Drive</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HALL RENTAL -->
+<section class="au-hall" id="hall-rental">
+  <div class="au-hall-inner">
+    <div class="au-hall-info">
+      <div class="au-eyebrow">Facility Booking</div>
+      <h2>Barangay Hall Rental</h2>
+      <p>The Pandacaqui Barangay Hall is available for rent for private events, community gatherings, meetings, and celebrations.</p>
+
+      <div class="au-hall-features">
+        <div class="au-hall-feat">
+          <span class="au-hall-feat-icon">👥</span>
+          <div>
+            <strong>Capacity</strong>
+            <span>Up to 150 guests</span>
+          </div>
+        </div>
+        <div class="au-hall-feat">
+          <span class="au-hall-feat-icon">📐</span>
+          <div>
+            <strong>Floor Area</strong>
+            <span>~200 square meters</span>
+          </div>
+        </div>
+        <div class="au-hall-feat">
+          <span class="au-hall-feat-icon">🎤</span>
+          <div>
+            <strong>Amenities</strong>
+            <span>Sound system, tables &amp; chairs, comfort room</span>
+          </div>
+        </div>
+        <div class="au-hall-feat">
+          <span class="au-hall-feat-icon">🕗</span>
+          <div>
+            <strong>Available Hours</strong>
+            <span>7:00 AM – 10:00 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="au-hall-note">
+        <span>📌</span>
+        <p>Subject to availability. The barangay reserves the right to prioritize official events. Rental fee and requirements will be communicated upon inquiry.</p>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="au-hall-form-wrap">
+      <div class="au-form-card">
+        @if (submitted()) {
+          <div class="au-form-success">
+            <div class="au-success-icon">✅</div>
+            <h3>Inquiry Received!</h3>
+            <p>Thank you, <strong>{{ form.name }}</strong>. Our barangay staff will contact you within 1–2 business days to confirm availability and requirements.</p>
+            <button class="au-btn-secondary" (click)="resetForm()">Submit Another Inquiry</button>
+          </div>
+        } @else {
+          <div class="au-form-header">
+            <h3>Hall Rental Inquiry</h3>
+            <p>Fill out the form below and we'll get back to you shortly.</p>
+          </div>
+
+          @if (formError()) {
+            <div class="au-form-error">⚠️ {{ formError() }}</div>
+          }
+
+          <div class="au-fg">
+            <label class="au-fl">Full Name <span class="au-req">*</span></label>
+            <input class="au-fi" [(ngModel)]="form.name" placeholder="Juan dela Cruz" />
+          </div>
+          <div class="au-fg-row">
+            <div class="au-fg">
+              <label class="au-fl">Contact Number <span class="au-req">*</span></label>
+              <input class="au-fi" [(ngModel)]="form.phone" type="tel" placeholder="09xx-xxx-xxxx" />
+            </div>
+            <div class="au-fg">
+              <label class="au-fl">Email Address</label>
+              <input class="au-fi" [(ngModel)]="form.email" type="email" placeholder="Optional" />
+            </div>
+          </div>
+          <div class="au-fg-row">
+            <div class="au-fg">
+              <label class="au-fl">Requested Date <span class="au-req">*</span></label>
+              <input class="au-fi" [(ngModel)]="form.date" type="date" />
+            </div>
+            <div class="au-fg">
+              <label class="au-fl">Number of Guests</label>
+              <input class="au-fi" [(ngModel)]="form.guests" type="number" placeholder="e.g. 80" min="1" max="150" />
+            </div>
+          </div>
+          <div class="au-fg">
+            <label class="au-fl">Purpose / Event Type <span class="au-req">*</span></label>
+            <input class="au-fi" [(ngModel)]="form.purpose" placeholder="e.g. Birthday Party, Business Meeting, Wedding Reception" />
+          </div>
+          <div class="au-fg">
+            <label class="au-fl">Additional Notes</label>
+            <textarea class="au-fta" [(ngModel)]="form.notes" rows="3" placeholder="Any special requirements or questions..."></textarea>
+          </div>
+
+          <button class="au-btn-submit" (click)="submitHallRental()" [disabled]="submitting()">
+            {{ submitting() ? 'Submitting…' : '📩 Submit Hall Rental Inquiry' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT FOOTER -->
+<footer class="au-footer">
+  <div class="au-footer-inner">
+    <div class="au-footer-col">
+      <div class="au-footer-brand">Barangay Pandacaqui</div>
+      <div class="au-footer-sub">Mexico, Pampanga · Region III</div>
+    </div>
+    <div class="au-footer-col">
+      <div class="au-footer-heading">Contact</div>
+      <div class="au-footer-item">📍 Barangay Pandacaqui, Mexico, Pampanga</div>
+      <div class="au-footer-item">🕗 Mon–Fri, 8:00 AM – 5:00 PM</div>
+    </div>
+    <div class="au-footer-col">
+      <div class="au-footer-heading">Quick Links</div>
+      <a class="au-footer-link" href="/client/eventpage">Official Events</a>
+      <a class="au-footer-link" href="/client/about#hall-rental">Hall Rental</a>
+    </div>
+  </div>
+  <div class="au-footer-bottom">
+    <span>© {{ currentYear }} Barangay Pandacaqui. All rights reserved.</span>
+    <span>Powered by Arreglado</span>
+  </div>
+</footer>

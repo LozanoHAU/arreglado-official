@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+app-client-layout { display: contents; }
+
+/* ── TOPBAR ── */
+.cl-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 62px;
+  background: #fff;
+  border-bottom: 3px solid #2C7A3B;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  box-shadow: 0 2px 16px rgba(44,122,59,.12);
+}
+
+/* brand */
+.cl-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.cl-brand-seal {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2C7A3B, #1a4d24);
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(44,122,59,.3);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(44,122,59,.25);
+}
+.cl-seal-inner {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: .72rem;
+  color: #fff;
+  letter-spacing: .04em;
+}
+.cl-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cl-brand-name {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #1C2920;
+  line-height: 1;
+}
+.cl-brand-tagline {
+  font-size: .65rem;
+  color: #5C7063;
+  font-weight: 500;
+  letter-spacing: .03em;
+}
+
+/* nav links */
+.cl-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cl-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 18px;
+  border-radius: 7px;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 500;
+  color: #5C7063;
+  transition: all .17s;
+  border: 1px solid transparent;
+  letter-spacing: .01em;
+}
+.cl-nav-link:hover {
+  background: rgba(44,122,59,.06);
+  color: #2C7A3B;
+  border-color: rgba(44,122,59,.15);
+}
+.cl-nav-link.cl-active {
+  background: rgba(44,122,59,.1);
+  color: #2C7A3B;
+  border-color: rgba(44,122,59,.2);
+  font-weight: 600;
+}
+.cl-nav-icon {
+  font-size: .85rem;
+  line-height: 1;
+}
+
+/* body offset for fixed nav */
+.cl-body {
+  padding-top: 62px;
+  min-height: 100vh;
+}
+
+/* ── HIDE RENDERER NAVS (event page renders its own nav) ── */
+body.agency .a-nav,
+body.minimal .m-nav,
+body.bold .b-nav {
+  display: none !important;
+}
+/* Compensate hero padding since external nav now handles the offset */
+body.agency .a-hero { padding-top: 80px !important; }
+body.minimal .m-hero { padding-top: 80px !important; }
+body.bold .b-hero { padding-top: 80px !important; }
+
+@media (max-width: 640px) {
+  .cl-topbar { padding: 0 16px; }
+  .cl-brand-tagline { display: none; }
+  .cl-nav-link { padding: 7px 12px; font-size: .78rem; }
+  .cl-nav-icon { display: none; }
+}

@@ -1,0 +1,26 @@
+<nav class="cl-topbar">
+  <a class="cl-brand" routerLink="/client/eventpage">
+    <div class="cl-brand-seal">
+      <span class="cl-seal-inner">BP</span>
+    </div>
+    <div class="cl-brand-text">
+      <span class="cl-brand-name">Barangay Pandacaqui</span>
+      <span class="cl-brand-tagline">Mexico, Pampanga</span>
+    </div>
+  </a>
+
+  <div class="cl-nav-links">
+    <a routerLink="/client/eventpage" routerLinkActive="cl-active" class="cl-nav-link">
+      <span class="cl-nav-icon">📅</span>
+      Official Events
+    </a>
+    <a routerLink="/client/about" routerLinkActive="cl-active" class="cl-nav-link">
+      <span class="cl-nav-icon">🏛️</span>
+      About Us
+    </a>
+  </div>
+</nav>
+
+<div class="cl-body">
+  <router-outlet></router-outlet>
+</div>

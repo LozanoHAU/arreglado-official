@@ -9,9 +9,260 @@
   </div>
 </header>
 
-<div class="coming-soon">
-  <div class="cs-icon">🔔</div>
-  <h2>Notifications &amp; Messages</h2>
-  <p>This module is still in development. You'll soon be able to send announcements, SMS alerts, and manage incoming messages from residents.</p>
-  <a routerLink="/admin/dashboard" class="btn btn-accent">← Back to Dashboard</a>
+<div class="page">
+
+  <div class="notif-hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-greeting">Admin Panel</div>
+        <div class="hero-title">Form Submissions</div>
+        <div class="hero-sub">Review and manage registration and hall rental requests from residents. Verify, reject, or expand each entry for full details.</div>
+      </div>
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        {{ (attendancePending() + hallRentalPending()) }} Pending Review
+      </div>
+    </div>
+    <div class="hero-chips">
+      <div class="hero-chip">
+        <div class="hero-chip-num">{{ attendancePending() }}</div>
+        <div class="hero-chip-lbl">Attendance Pending</div>
+      </div>
+      <div class="hero-chip">
+        <div class="hero-chip-num gold">{{ hallRentalPending() }}</div>
+        <div class="hero-chip-lbl">Rental Pending</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="section-label">Submission Inbox</div>
+
+    <div class="notif-tabs">
+      <button
+        class="ntab"
+        [class.active]="activeTab() === 'attendance'"
+        (click)="switchTab('attendance')">
+        <span class="ntab-icon">📋</span>
+        Event Attendance Verification
+        @if (attendancePending() > 0) {
+          <span class="ntab-badge">{{ attendancePending() }}</span>
+        }
+      </button>
+      <button
+        class="ntab"
+        [class.active]="activeTab() === 'hall-rental'"
+        (click)="switchTab('hall-rental')">
+        <span class="ntab-icon">🏛️</span>
+        Hall Rental Requests
+        @if (hallRentalPending() > 0) {
+          <span class="ntab-badge gold">{{ hallRentalPending() }}</span>
+        }
+      </button>
+    </div>
+
+    <div class="notif-content">
+
+      @if (activeTab() === 'attendance') {
+        <div>
+          <div class="notif-toolbar">
+            <div class="notif-filters">
+              @for (f of filterOptions; track f.value) {
+                <button
+                  class="nfilter"
+                  [class.active]="statusFilter() === f.value"
+                  (click)="setFilter(f.value)">
+                  {{ f.label }}
+                </button>
+              }
+            </div>
+            @if (selectedCount() > 0) {
+              <div class="bulk-actions">
+                <span class="bulk-count">{{ selectedCount() }} selected</span>
+                <button class="btn btn-verify" (click)="bulkVerify()">✓ Verify Selected</button>
+                <button class="btn btn-reject" (click)="bulkReject()">✕ Reject Selected</button>
+              </div>
+            }
+          </div>
+
+          @if (hasPendingAttendance()) {
+            <div class="select-all-row">
+              <label class="cb-wrap">
+                <input type="checkbox" class="cb" [checked]="allSelected()" (change)="toggleSelectAll()" />
+                <span class="cb-label">Select all pending</span>
+              </label>
+            </div>
+          }
+
+          @if (attendanceList().length === 0) {
+            <div class="notif-empty">
+              <div class="notif-empty-icon">📋</div>
+              <strong>No submissions found</strong>
+              <span>When residents register through event pages, their submissions will appear here.</span>
+            </div>
+          } @else {
+            <div class="sub-list">
+              @for (sub of attendanceList(); track sub.id) {
+                <div class="sub-card" [class.expanded]="expandedId() === sub.id" [class.selected]="isSelected(sub.id)">
+                  <div class="sub-card-main">
+                    @if (sub.status === 'pending') {
+                      <label class="cb-wrap sub-cb" (click)="$event.stopPropagation()">
+                        <input type="checkbox" class="cb" [checked]="isSelected(sub.id)" (change)="toggleSelect(sub.id)" />
+                      </label>
+                    } @else {
+                      <div class="sub-cb-placeholder"></div>
+                    }
+
+                    <div class="sub-avatar">{{ sub.name.charAt(0) }}</div>
+
+                    <div class="sub-info" (click)="toggleExpand(sub.id)">
+                      <div class="sub-name">{{ sub.name }}</div>
+                      <div class="sub-meta">
+                        <span class="sub-event">{{ sub.eventName }}</span>
+                        <span class="sub-sep">·</span>
+                        <span class="sub-time">{{ relativeTime(sub.submittedAt) }}</span>
+                      </div>
+                    </div>
+
+                    <span class="sub-status" [class]="sub.status">
+                      @if (sub.status === 'verified') { ✓ Verified }
+                      @if (sub.status === 'pending')  { ⏳ Pending }
+                      @if (sub.status === 'rejected') { ✕ Rejected }
+                    </span>
+
+                    <div class="sub-actions">
+                      @if (sub.status !== 'verified') {
+                        <button class="sub-btn verify" (click)="updateStatus(sub.id, 'verified')">Verify</button>
+                      }
+                      @if (sub.status !== 'rejected') {
+                        <button class="sub-btn reject" (click)="updateStatus(sub.id, 'rejected')">Reject</button>
+                      }
+                      <button class="sub-btn expand" (click)="toggleExpand(sub.id)">
+                        {{ expandedId() === sub.id ? '▲' : '▼' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  @if (expandedId() === sub.id) {
+                    <div class="sub-card-detail">
+                      <div class="sub-detail-header">Submission Details</div>
+                      <div class="sub-fields">
+                        @for (field of sub.fields; track field.label) {
+                          <div class="sub-field">
+                            <span class="sub-field-lbl">{{ field.label }}</span>
+                            <span class="sub-field-val">{{ field.value }}</span>
+                          </div>
+                        }
+                        <div class="sub-field">
+                          <span class="sub-field-lbl">Submitted At</span>
+                          <span class="sub-field-val">{{ sub.submittedAt | date:'medium' }}</span>
+                        </div>
+                      </div>
+                      <button class="sub-btn-delete" (click)="deleteSubmission(sub.id)">🗑 Delete</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (activeTab() === 'hall-rental') {
+        <div>
+          <div class="notif-toolbar">
+            <div class="notif-filters">
+              @for (f of filterOptions; track f.value) {
+                <button
+                  class="nfilter"
+                  [class.active]="statusFilter() === f.value"
+                  (click)="setFilter(f.value)">
+                  {{ f.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (hallRentalList().length === 0) {
+            <div class="notif-empty">
+              <div class="notif-empty-icon">🏛️</div>
+              <strong>No hall rental requests yet</strong>
+              <span>Requests submitted through the <a routerLink="/client/about">About Us page</a> will appear here.</span>
+            </div>
+          } @else {
+            <div class="sub-list">
+              @for (sub of hallRentalList(); track sub.id) {
+                <div class="sub-card rental" [class.expanded]="expandedId() === sub.id">
+                  <div class="sub-card-main">
+                    <div class="sub-avatar rental-av">{{ sub.name.charAt(0) }}</div>
+
+                    <div class="sub-info" (click)="toggleExpand(sub.id)">
+                      <div class="sub-name">{{ sub.name }}</div>
+                      <div class="sub-meta">
+                        <span class="sub-event">{{ fieldValue(sub.fields, 'Purpose / Event Type') }}</span>
+                        <span class="sub-sep">·</span>
+                        <span class="sub-time">{{ relativeTime(sub.submittedAt) }}</span>
+                      </div>
+                      @if (fieldValue(sub.fields, 'Requested Date'); as rd) {
+                        <div class="sub-date-badge">📅 Requested: {{ rd }}</div>
+                      }
+                    </div>
+
+                    <span class="sub-status" [class]="sub.status">
+                      @if (sub.status === 'verified') { ✓ Confirmed }
+                      @if (sub.status === 'pending')  { ⏳ Pending }
+                      @if (sub.status === 'rejected') { ✕ Declined }
+                    </span>
+
+                    <div class="sub-actions">
+                      @if (sub.status !== 'verified') {
+                        <button class="sub-btn verify" (click)="updateStatus(sub.id, 'verified')">Confirm</button>
+                      }
+                      @if (sub.status !== 'rejected') {
+                        <button class="sub-btn reject" (click)="updateStatus(sub.id, 'rejected')">Decline</button>
+                      }
+                      <button class="sub-btn expand" (click)="toggleExpand(sub.id)">
+                        {{ expandedId() === sub.id ? '▲' : '▼' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  @if (expandedId() === sub.id) {
+                    <div class="sub-card-detail">
+                      <div class="sub-detail-header">Rental Inquiry Details</div>
+                      <div class="sub-fields">
+                        @for (field of sub.fields; track field.label) {
+                          <div class="sub-field">
+                            <span class="sub-field-lbl">{{ field.label }}</span>
+                            <span class="sub-field-val">{{ field.value }}</span>
+                          </div>
+                        }
+                        <div class="sub-field">
+                          <span class="sub-field-lbl">Submitted At</span>
+                          <span class="sub-field-val">{{ sub.submittedAt | date:'medium' }}</span>
+                        </div>
+                      </div>
+                      <button class="sub-btn-delete" (click)="deleteSubmission(sub.id)">🗑 Delete</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+
+  <div class="dash-footer">
+    <div class="footer-left"><strong>Arreglado</strong> &nbsp;·&nbsp; Barangay Pandacaqui Event Management System</div>
+    <div class="footer-right">v1.0 · 2026</div>
+  </div>
+
 </div>
+
+@if (toastMsg()) {
+  <div class="toast">{{ toastMsg() }}</div>
+}

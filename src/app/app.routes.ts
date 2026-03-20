@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'client/eventpage', pathMatch: 'full' },
+
+  // ── ADMIN ──────────────────────────────────────────────────────────────────
   {
     path: 'admin',
     children: [
@@ -28,8 +30,12 @@ export const routes: Routes = [
       },
     ],
   },
+
+  // ── CLIENT (shared navbar wrapper) ────────────────────────────────────────
   {
     path: 'client',
+    loadComponent: () =>
+      import('./clientside/layout/layout').then(m => m.ClientLayoutComponent),
     children: [
       {
         path: 'eventpage',
@@ -37,11 +43,20 @@ export const routes: Routes = [
           import('./clientside/eventpage/eventpage').then(m => m.EventpageComponent),
       },
       {
-        path: 'preview',
+        path: 'about',
         loadComponent: () =>
-          import('./clientside/preview/preview').then(m => m.PreviewComponent),
+          import('./clientside/about/about').then(m => m.AboutComponent),
       },
+      { path: '', redirectTo: 'eventpage', pathMatch: 'full' },
     ],
   },
+
+  // Preview is standalone (no client navbar, used by admin)
+  {
+    path: 'client/preview',
+    loadComponent: () =>
+      import('./clientside/preview/preview').then(m => m.PreviewComponent),
+  },
+
   { path: '**', redirectTo: 'client/eventpage' },
 ];
