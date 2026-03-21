@@ -67,22 +67,28 @@
       @if (activeTab() === 'attendance') {
         <div>
 
-          @if (uniqueAttendanceEvents().length > 1) {
-            <div class="notif-filters event-filter-row">
-              <button
-                class="nfilter"
-                [class.active]="eventFilter() === 'all'"
-                (click)="setEventFilter('all')">
-                🗂 All Events
-              </button>
-              @for (evName of uniqueAttendanceEvents(); track evName) {
+          @if (uniqueAttendanceEvents().length > 0) {
+            <div class="event-filter-section">
+              <div class="event-filter-label">
+                <span class="event-filter-label-icon">📅</span>
+                Filter by Event
+              </div>
+              <div class="notif-filters event-filter-row">
                 <button
                   class="nfilter"
-                  [class.active]="eventFilter() === evName"
-                  (click)="setEventFilter(evName)">
-                  {{ evName }}
+                  [class.active]="eventFilter() === 'all'"
+                  (click)="setEventFilter('all')">
+                  🗂 All Events
                 </button>
-              }
+                @for (evName of uniqueAttendanceEvents(); track evName) {
+                  <button
+                    class="nfilter event-nfilter"
+                    [class.active]="eventFilter() === evName"
+                    (click)="setEventFilter(evName)">
+                    {{ evName }}
+                  </button>
+                }
+              </div>
             </div>
           }
 
@@ -97,13 +103,19 @@
                 </button>
               }
             </div>
-            @if (selectedCount() > 0) {
-              <div class="bulk-actions">
-                <span class="bulk-count">{{ selectedCount() }} selected</span>
-                <button class="btn btn-verify" (click)="bulkVerify()">✓ Verify Selected</button>
-                <button class="btn btn-reject" (click)="bulkReject()">✕ Reject Selected</button>
-              </div>
-            }
+            <div class="toolbar-right">
+              @if (selectedCount() > 0) {
+                <div class="bulk-actions">
+                  <span class="bulk-count">{{ selectedCount() }} selected</span>
+                  <button class="btn btn-verify" (click)="bulkVerify()">✓ Verify</button>
+                  <button class="btn btn-reject" (click)="bulkReject()">✕ Reject</button>
+                  <button class="btn btn-delete-bulk" (click)="bulkDelete()">🗑 Delete</button>
+                </div>
+              }
+              <button class="btn btn-report" (click)="openReportModal()">
+                📄 Generate Report
+              </button>
+            </div>
           </div>
 
           @if (hasPendingAttendance()) {
@@ -158,6 +170,7 @@
                       @if (sub.status !== 'rejected') {
                         <button class="sub-btn reject" (click)="updateStatus(sub.id, 'rejected')">Reject</button>
                       }
+                      <button class="sub-btn delete-inline" (click)="deleteSubmission(sub.id)" title="Delete">🗑</button>
                       <button class="sub-btn expand" (click)="toggleExpand(sub.id)">
                         {{ expandedId() === sub.id ? '▲' : '▼' }}
                       </button>
@@ -179,7 +192,6 @@
                           <span class="sub-field-val">{{ sub.submittedAt | date:'medium' }}</span>
                         </div>
                       </div>
-                      <button class="sub-btn-delete" (click)="deleteSubmission(sub.id)">🗑 Delete</button>
                     </div>
                   }
                 </div>
@@ -201,6 +213,11 @@
                   {{ f.label }}
                 </button>
               }
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-report" (click)="openReportModal()">
+                📄 Generate Report
+              </button>
             </div>
           </div>
 
@@ -242,6 +259,7 @@
                       @if (sub.status !== 'rejected') {
                         <button class="sub-btn reject" (click)="updateStatus(sub.id, 'rejected')">Decline</button>
                       }
+                      <button class="sub-btn delete-inline" (click)="deleteSubmission(sub.id)" title="Delete">🗑</button>
                       <button class="sub-btn expand" (click)="toggleExpand(sub.id)">
                         {{ expandedId() === sub.id ? '▲' : '▼' }}
                       </button>
@@ -263,7 +281,6 @@
                           <span class="sub-field-val">{{ sub.submittedAt | date:'medium' }}</span>
                         </div>
                       </div>
-                      <button class="sub-btn-delete" (click)="deleteSubmission(sub.id)">🗑 Delete</button>
                     </div>
                   }
                 </div>
@@ -282,6 +299,123 @@
   </div>
 
 </div>
+
+@if (showReportModal()) {
+  <div class="report-modal-bg" (click)="$event.target === $event.currentTarget && closeReportModal()">
+    <div class="report-modal-box">
+      <div class="report-modal-header">
+        <div>
+          <div class="report-modal-eyebrow">
+            {{ activeTab() === 'attendance' ? '📋 Attendance' : '🏛️ Hall Rental' }}
+          </div>
+          <h3 class="report-modal-title">Generate Report</h3>
+          <p class="report-modal-sub">Select a date range to download a .txt summary of submissions.</p>
+        </div>
+        <button class="report-modal-close" (click)="closeReportModal()">✕</button>
+      </div>
+
+      <div class="report-modal-body">
+      <div class="report-date-row">
+          <div class="report-fg">
+            <label class="report-fl">Start Date</label>
+            <button
+              class="cal-trigger"
+              [class.active]="reportCalOpen() === 'start'"
+              (click)="openCal('start')">
+              <span class="cal-trigger-icon">📅</span>
+              <span class="cal-trigger-text" [class.placeholder]="!reportStartDate()">
+                {{ formatDisplayDate(reportStartDate()) }}
+              </span>
+              <span class="cal-caret">{{ reportCalOpen() === 'start' ? '▲' : '▼' }}</span>
+            </button>
+            @if (reportCalOpen() === 'start') {
+              <div class="cal-inline">
+                <div class="cal-header">
+                  <button class="cal-nav" (click)="prevCalMonth()">‹</button>
+                  <span class="cal-month-label">{{ calMonthLabel() }}</span>
+                  <button class="cal-nav" (click)="nextCalMonth()">›</button>
+                </div>
+                <div class="cal-grid">
+                  @for (wd of CAL_WEEKDAYS; track wd) {
+                    <div class="cal-wd">{{ wd }}</div>
+                  }
+                  @for (day of calDays(); track $index) {
+                    <button
+                      class="cal-day"
+                      [class.selected]="calDayState(day) === 'selected'"
+                      [class.in-range]="calDayState(day) === 'in-range'"
+                      [class.today]="calDayState(day) === 'today'"
+                      [class.empty]="!day"
+                      [disabled]="!day"
+                      (click)="selectCalDate(day)">
+                      {{ day ?? '' }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="report-fg">
+            <label class="report-fl">End Date</label>
+            <button
+              class="cal-trigger"
+              [class.active]="reportCalOpen() === 'end'"
+              (click)="openCal('end')">
+              <span class="cal-trigger-icon">📅</span>
+              <span class="cal-trigger-text" [class.placeholder]="!reportEndDate()">
+                {{ formatDisplayDate(reportEndDate()) }}
+              </span>
+              <span class="cal-caret">{{ reportCalOpen() === 'end' ? '▲' : '▼' }}</span>
+            </button>
+            @if (reportCalOpen() === 'end') {
+              <div class="cal-inline">
+                <div class="cal-header">
+                  <button class="cal-nav" (click)="prevCalMonth()">‹</button>
+                  <span class="cal-month-label">{{ calMonthLabel() }}</span>
+                  <button class="cal-nav" (click)="nextCalMonth()">›</button>
+                </div>
+                <div class="cal-grid">
+                  @for (wd of CAL_WEEKDAYS; track wd) {
+                    <div class="cal-wd">{{ wd }}</div>
+                  }
+                  @for (day of calDays(); track $index) {
+                    <button
+                      class="cal-day"
+                      [class.selected]="calDayState(day) === 'selected'"
+                      [class.in-range]="calDayState(day) === 'in-range'"
+                      [class.today]="calDayState(day) === 'today'"
+                      [class.empty]="!day"
+                      [disabled]="!day"
+                      (click)="selectCalDate(day)">
+                      {{ day ?? '' }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="report-info-box">
+          <span class="report-info-icon">ℹ️</span>
+          <span class="report-info-text">
+            The report will include all
+            {{ activeTab() === 'attendance' ? 'attendance' : 'hall rental' }}
+            submissions submitted within the selected date range, with a status summary and full field details per entry.
+          </span>
+        </div>
+      </div>
+
+      <div class="report-modal-footer">
+        <button class="btn btn-outline" (click)="closeReportModal()">Cancel</button>
+        <button class="btn btn-report-download" (click)="downloadReport()">
+          ⬇ Download .txt Report
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 @if (toastMsg()) {
   <div class="toast">{{ toastMsg() }}</div>

@@ -1,6 +1,8 @@
-import { Component, OnInit, computed, signal, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, computed, signal, ViewEncapsulation, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { EventService } from '../../shared/event.service';
 
 const SUBMISSIONS_KEY = 'ar_submissions';
 
@@ -21,12 +23,14 @@ export interface Submission {
 
 @Component({
   selector: 'app-notifications',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, FormsModule],
   templateUrl: './notifications.html',
   styleUrl: './notifications.css',
   encapsulation: ViewEncapsulation.None,
 })
 export class NotificationsComponent implements OnInit {
+  private eventSvc = inject(EventService);
+
   activeTab = signal<'attendance' | 'hall-rental'>('attendance');
   submissions = signal<Submission[]>([]);
   selectedIds = signal<Set<string>>(new Set());
@@ -36,6 +40,19 @@ export class NotificationsComponent implements OnInit {
   eventFilter = signal<string>('all');
   toastTimer: ReturnType<typeof setTimeout> | undefined;
 
+  publishedEventNames = signal<string[]>([]);
+
+  showReportModal = signal(false);
+  reportStartDate = signal('');
+  reportEndDate = signal('');
+
+  // Calendar picker state
+  reportCalOpen = signal<'start' | 'end' | null>(null);
+  reportCalViewYear = signal(new Date().getFullYear());
+  reportCalViewMonth = signal(new Date().getMonth());
+
+  readonly CAL_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
   readonly filterOptions: { value: 'all' | 'pending' | 'verified' | 'rejected'; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'pending', label: 'Pending' },
@@ -43,14 +60,35 @@ export class NotificationsComponent implements OnInit {
     { value: 'rejected', label: 'Rejected' },
   ];
 
-  uniqueAttendanceEvents = computed(() =>
-    [...new Set(
-      this.submissions()
-        .filter(s => s.type === 'attendance')
-        .map(s => s.eventName)
-        .filter(Boolean)
-    )]
+  calDays = computed(() => {
+    const year = this.reportCalViewYear();
+    const month = this.reportCalViewMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days: (number | null)[] = [];
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let d = 1; d <= daysInMonth; d++) days.push(d);
+    while (days.length % 7 !== 0) days.push(null);
+    return days;
+  });
+
+  calMonthLabel = computed(() =>
+    new Date(this.reportCalViewYear(), this.reportCalViewMonth(), 1)
+      .toLocaleString('en-US', { month: 'long', year: 'numeric' })
   );
+
+  uniqueAttendanceEvents = computed(() => {
+    const fromSubmissions = [
+      ...new Set(
+        this.submissions()
+          .filter(s => s.type === 'attendance')
+          .map(s => s.eventName)
+          .filter(Boolean)
+      ),
+    ];
+    const published = this.publishedEventNames();
+    return [...new Set([...published, ...fromSubmissions])];
+  });
 
   attendanceList = computed(() =>
     this.submissions()
@@ -86,6 +124,16 @@ export class NotificationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSubmissions();
+    this.loadPublishedEvents();
+  }
+
+  private loadPublishedEvents(): void {
+    const calEvents = this.eventSvc.loadCalendarEvents();
+    const names = calEvents
+      .filter(ev => !!ev.templateId)
+      .map(ev => ev.title)
+      .filter(Boolean);
+    this.publishedEventNames.set([...new Set(names)]);
   }
 
   private loadSubmissions(): void {
@@ -182,6 +230,16 @@ export class NotificationsComponent implements OnInit {
     this.showToast(`${count} submission${count > 1 ? 's' : ''} rejected`);
   }
 
+  bulkDelete(): void {
+    const ids = this.selectedIds();
+    if (!confirm(`Delete ${ids.size} selected submission${ids.size > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    this.submissions.update(list => list.filter(s => !ids.has(s.id)));
+    this.persist();
+    const count = ids.size;
+    this.selectedIds.set(new Set());
+    this.showToast(`🗑 ${count} submission${count > 1 ? 's' : ''} deleted`);
+  }
+
   deleteSubmission(id: string): void {
     if (!confirm('Delete this submission? This cannot be undone.')) return;
     this.submissions.update(list => list.filter(s => s.id !== id));
@@ -191,6 +249,7 @@ export class NotificationsComponent implements OnInit {
       n.delete(id);
       return n;
     });
+    if (this.expandedId() === id) this.expandedId.set(null);
     this.showToast('Submission deleted');
   }
 
@@ -211,6 +270,155 @@ export class NotificationsComponent implements OnInit {
     if (hrs < 24) return `${hrs}h ago`;
     const days = Math.floor(hrs / 24);
     return `${days}d ago`;
+  }
+
+  openReportModal(): void {
+    this.reportStartDate.set('');
+    this.reportEndDate.set('');
+    this.reportCalOpen.set(null);
+    this.showReportModal.set(true);
+  }
+
+  closeReportModal(): void {
+    this.showReportModal.set(false);
+    this.reportCalOpen.set(null);
+  }
+
+  openCal(which: 'start' | 'end'): void {
+    if (this.reportCalOpen() === which) {
+      this.reportCalOpen.set(null);
+      return;
+    }
+    this.reportCalOpen.set(which);
+    const val = which === 'start' ? this.reportStartDate() : this.reportEndDate();
+    const ref = val ? new Date(val + 'T00:00:00') : new Date();
+    this.reportCalViewYear.set(ref.getFullYear());
+    this.reportCalViewMonth.set(ref.getMonth());
+  }
+
+  prevCalMonth(): void {
+    if (this.reportCalViewMonth() === 0) {
+      this.reportCalViewMonth.set(11);
+      this.reportCalViewYear.update(y => y - 1);
+    } else {
+      this.reportCalViewMonth.update(m => m - 1);
+    }
+  }
+
+  nextCalMonth(): void {
+    if (this.reportCalViewMonth() === 11) {
+      this.reportCalViewMonth.set(0);
+      this.reportCalViewYear.update(y => y + 1);
+    } else {
+      this.reportCalViewMonth.update(m => m + 1);
+    }
+  }
+
+  selectCalDate(day: number | null): void {
+    if (!day) return;
+    const y = this.reportCalViewYear();
+    const m = this.reportCalViewMonth();
+    const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    if (this.reportCalOpen() === 'start') {
+      this.reportStartDate.set(dateStr);
+    } else {
+      this.reportEndDate.set(dateStr);
+    }
+    this.reportCalOpen.set(null);
+  }
+
+  calDayState(day: number | null): 'empty' | 'today' | 'selected' | 'in-range' | 'normal' {
+    if (!day) return 'empty';
+    const y = this.reportCalViewYear();
+    const m = this.reportCalViewMonth();
+    const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    if (dateStr === this.reportStartDate() || dateStr === this.reportEndDate()) return 'selected';
+    if (this.reportStartDate() && this.reportEndDate() &&
+        dateStr > this.reportStartDate() && dateStr < this.reportEndDate()) return 'in-range';
+    const today = new Date();
+    if (day === today.getDate() && m === today.getMonth() && y === today.getFullYear()) return 'today';
+    return 'normal';
+  }
+
+  formatDisplayDate(isoDate: string): string {
+    if (!isoDate) return 'Select date';
+    const d = new Date(isoDate + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  downloadReport(): void {
+    const start = this.reportStartDate();
+    const end = this.reportEndDate();
+    if (!start || !end) {
+      this.showToast('Please select both start and end dates.');
+      return;
+    }
+    if (start > end) {
+      this.showToast('Start date must be before end date.');
+      return;
+    }
+
+    const startDate = new Date(start + 'T00:00:00');
+    const endDate   = new Date(end   + 'T23:59:59');
+    const tab       = this.activeTab();
+
+    const filtered = this.submissions().filter(s => {
+      if (s.type !== tab) return false;
+      const d = new Date(s.submittedAt);
+      return d >= startDate && d <= endDate;
+    });
+
+    if (filtered.length === 0) {
+      this.showToast('No submissions found in that date range.');
+      return;
+    }
+
+    const tabLabel = tab === 'attendance' ? 'Event Attendance Verifications' : 'Hall Rental Requests';
+    const lines: string[] = [];
+
+    lines.push('='.repeat(60));
+    lines.push('ARREGLADO — BARANGAY PANDACAQUI');
+    lines.push(tabLabel.toUpperCase());
+    lines.push(`Report Period : ${start} to ${end}`);
+    lines.push(`Generated     : ${new Date().toLocaleString('en-PH')}`);
+    lines.push(`Total Records : ${filtered.length}`);
+    lines.push('='.repeat(60));
+    lines.push('');
+
+    const count = { pending: 0, verified: 0, rejected: 0 };
+    filtered.forEach(s => count[s.status]++);
+    lines.push('SUMMARY');
+    lines.push('-'.repeat(30));
+    lines.push(`Pending  : ${count.pending}`);
+    lines.push(`Verified : ${count.verified}`);
+    lines.push(`Rejected : ${count.rejected}`);
+    lines.push('');
+
+    filtered.forEach((s, i) => {
+      lines.push('─'.repeat(60));
+      lines.push(`#${i + 1}  ${s.name}`);
+      lines.push(`Status    : ${s.status.toUpperCase()}`);
+      if (tab === 'attendance') lines.push(`Event     : ${s.eventName}`);
+      lines.push(`Submitted : ${new Date(s.submittedAt).toLocaleString('en-PH')}`);
+      if (s.fields.length > 0) {
+        lines.push('Fields:');
+        s.fields.forEach(f => lines.push(`  ${f.label}: ${f.value}`));
+      }
+      lines.push('');
+    });
+
+    lines.push('='.repeat(60));
+    lines.push('END OF REPORT');
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${tab === 'attendance' ? 'attendance' : 'hall-rental'}_report_${start}_to_${end}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.closeReportModal();
+    this.showToast(`📄 Report downloaded (${filtered.length} record${filtered.length > 1 ? 's' : ''})`);
   }
 
   private showToast(msg: string): void {

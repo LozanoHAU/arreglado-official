@@ -1,15 +1,22 @@
 /**
- * site-renderer.ts
- * Pure TypeScript rendering engine.
- * Exports:
- *   renderStyles(SD)  → raw CSS string (inject into document.head)
- *   renderBody(SD)    → sections HTML string only (bind via [innerHTML])
- *   renderSite(SD)    → full standalone HTML document (kept for other uses)
+ * site-renderer.ts  — src/app/clientside/preview/site-renderer.ts
+ *
+ * CHANGED FUNCTIONS (3 only):
+ *   1. renderField      — adds class="ff-wrap" data-label="..." to every wrapper div
+ *   2. renderForm       — new eventName param + saves to ar_submissions localStorage
+ *   3. renderFormSection — extracts event name from hero section, passes to renderForm
+ *
+ * Everything else is identical to the original.
  */
 import { SiteData, SiteSection } from '../../shared/event.model';
 
 function esc(s: any): string {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── NEW: needed so event name is safe inside the inline onclick JS string ──
+function escJs(s: any): string {
+  return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r');
 }
 
 function formatHeadline(h: string, fallback: string): string {
@@ -45,24 +52,30 @@ function socialBar(d: Record<string,any>, cls: string): string {
   return links.map(([url,icon]) => `<a href="${esc(url)}" class="${cls}" target="_blank" rel="noopener">${icon}</a>`).join('');
 }
 
+// ── CHANGED 1/3 ─────────────────────────────────────────────────────────────
+// Added class="ff-wrap" data-label="..." so the submit handler can read values
 function renderField(f: any, inputCls: string, taCls: string, selCls: string, lblCls: string): string {
   const req = f.required ? `<span style="color:var(--c1)">*</span>` : '';
   const lbl = `<label class="${lblCls}">${esc(f.label)}${req}</label>`;
-  if (f.type === 'textarea') return `<div>${lbl}<textarea class="${taCls}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''}></textarea></div>`;
+  if (f.type === 'textarea') return `<div class="ff-wrap" data-label="${esc(f.label)}">${lbl}<textarea class="${taCls}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''}></textarea></div>`;
   if (f.type === 'select') {
     const opts = (f.options||[]).map((o: string) => `<option>${esc(o)}</option>`).join('');
-    return `<div>${lbl}<select class="${selCls}" ${f.required?'required':''}><option value="">— Select —</option>${opts}</select></div>`;
+    return `<div class="ff-wrap" data-label="${esc(f.label)}">${lbl}<select class="${selCls}" ${f.required?'required':''}><option value="">— Select —</option>${opts}</select></div>`;
   }
   const typeMap: Record<string,string> = {email:'email',phone:'tel',number:'number',url:'url'};
   const t = typeMap[f.type] || 'text';
-  return `<div>${lbl}<input type="${t}" class="${inputCls}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''}></div>`;
+  return `<div class="ff-wrap" data-label="${esc(f.label)}">${lbl}<input type="${t}" class="${inputCls}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''}></div>`;
 }
 
-function renderForm(sec: SiteSection, L: string): string {
+// ── CHANGED 2/3 ─────────────────────────────────────────────────────────────
+// Added eventName parameter; onclick now collects fields + saves to ar_submissions
+function renderForm(sec: SiteSection, L: string, eventName: string): string {
   const d = sec.data;
   const PX = L === 'agency' ? 'a' : L === 'minimal' ? 'm' : 'b';
-  const inputCls = `${PX}-cf-input`, taCls = `${PX}-cf-ta`, selCls = `${PX}-cf-sel`;
-  const lblCls   = `${PX}-cf-lbl`,  submitCls = `${PX}-cf-submit`, successCls = `${PX}-cf-success`;
+  const inputCls  = `${PX}-cf-input`, taCls = `${PX}-cf-ta`, selCls = `${PX}-cf-sel`;
+  const lblCls    = `${PX}-cf-lbl`, submitCls = `${PX}-cf-submit`, successCls = `${PX}-cf-success`;
+  const safeEvName = escJs(eventName || 'Event');
+  const secId = esc(sec.id);
 
   let rows = '';
   let i = 0;
@@ -78,20 +91,48 @@ function renderForm(sec: SiteSection, L: string): string {
     }
   }
 
-  return `<div id="${esc(sec.id)}">${rows}
-    <button type="button" class="${submitCls}"
-      onclick="(function(el){
-        var ins=el.parentElement.querySelectorAll('[required]');var ok=true;
-        ins.forEach(function(i){if(!i.value.trim()){i.style.borderColor='#ff4d6a';ok=false;}else i.style.borderColor='';});
-        if(!ok)return;
-        el.style.display='none';
-        document.getElementById('${esc(sec.id)}-success').style.display='block';
-      })(this)">${esc(d['submitLabel']||'Send')}</button>
-    <div class="${successCls}" id="${esc(sec.id)}-success" style="display:none">${esc(d['successMsg']||"Thanks!")}</div>
+  return `<div id="${secId}">${rows}
+    <button type="button" class="${submitCls}" onclick="(function(btn){
+      var wrap=document.getElementById('${secId}');
+      var required=wrap.querySelectorAll('[required]');
+      var valid=true;
+      required.forEach(function(el){
+        if(!el.value.trim()){el.style.borderColor='#ff4d6a';valid=false;}
+        else{el.style.borderColor='';}
+      });
+      if(!valid)return;
+      var wrapEls=wrap.querySelectorAll('.ff-wrap');
+      var submFields=[];
+      var subName='';
+      wrapEls.forEach(function(w){
+        var lbl=w.getAttribute('data-label')||'';
+        var inp=w.querySelector('input,textarea,select');
+        var val=inp?inp.value.trim():'';
+        if(lbl&&val){submFields.push({label:lbl,value:val});}
+        if(!subName&&lbl.toLowerCase().indexOf('name')>=0&&val){subName=val;}
+      });
+      try{
+        var sub={
+          id:'sub-'+Date.now(),
+          type:'attendance',
+          name:subName||'Resident',
+          submittedAt:new Date().toISOString(),
+          status:'pending',
+          eventName:'${safeEvName}',
+          fields:submFields
+        };
+        var existing=JSON.parse(localStorage.getItem('ar_submissions')||'[]');
+        existing.unshift(sub);
+        localStorage.setItem('ar_submissions',JSON.stringify(existing));
+      }catch(e){}
+      btn.style.display='none';
+      document.getElementById('${secId}-success').style.display='block';
+    })(this)">${esc(d['submitLabel']||'Send')}</button>
+    <div class="${successCls}" id="${secId}-success" style="display:none">${esc(d['successMsg']||"Thanks!")}</div>
   </div>`;
 }
 
-// ── SECTION RENDERERS ────────────────────────────────────────────────────────
+// ── SECTION RENDERERS (unchanged) ────────────────────────────────────────────
 
 function renderHero(sec: SiteSection, L: string, SD: SiteData): string {
   const d = sec.data;
@@ -265,15 +306,19 @@ function renderFeatures(sec: SiteSection, L: string): string {
   </section>`;
 }
 
-function renderFormSection(sec: SiteSection, L: string): string {
+// ── CHANGED 3/3 ─────────────────────────────────────────────────────────────
+// Now extracts the event name from the hero section and passes it to renderForm
+function renderFormSection(sec: SiteSection, L: string, SD: SiteData): string {
   const d = sec.data;
+  const hero = SD.sections.find(s => s.type === 'hero');
+  const eventName = hero?.data['headline']?.trim() || hero?.data['navBrand']?.trim() || d['title'] || 'Event';
   const eyeCls = L === 'agency' ? 'eyebrow' : L === 'minimal' ? 'm-eyebrow2' : 'b-eyebrow';
   const secCls = L === 'agency' ? 'a-form-sec' : L === 'minimal' ? 'm-form-sec' : 'b-form-sec';
   return `<section class="${secCls}" id="form" data-r>
     <div class="${eyeCls}">${esc(d['eyebrow']||'Register')}</div>
     <h2>${esc(d['title']||'Register Now')}</h2>
     ${d['desc']?`<p class="form-desc">${esc(d['desc'])}</p>`:''}
-    ${renderForm(sec, L)}
+    ${renderForm(sec, L, eventName)}
   </section>`;
 }
 
@@ -327,13 +372,12 @@ function renderSection(sec: SiteSection, L: string, SD: SiteData): string {
     case 'about-centered': return renderAboutCentered(sec, L);
     case 'about-stats':    return renderAboutStats(sec, L);
     case 'features':       return renderFeatures(sec, L);
-    case 'form':           return renderFormSection(sec, L);
+    case 'form':           return renderFormSection(sec, L, SD);
     case 'contact':        return renderContact(sec, L, SD);
     default: return '';
   }
 }
 
-// ── CSS STRING (no <style> tags) ─────────────────────────────────────────────
 export function renderStyles(SD: SiteData): string {
   const c1 = SD.theme?.primary   || '#7c6aff';
   const c2 = SD.theme?.secondary || '#ff6a8a';
@@ -533,13 +577,11 @@ label.b-cf-lbl{display:block;font-size:.65rem;font-weight:700;text-transform:upp
 ${customCss}`;
 }
 
-// ── BODY HTML (sections only) ────────────────────────────────────────────────
 export function renderBody(SD: SiteData): string {
   const L = SD.layout || 'agency';
   return SD.sections.map(s => renderSection(s, L, SD)).join('\n');
 }
 
-// ── FULL STANDALONE DOCUMENT (kept for reference) ────────────────────────────
 export function renderSite(SD: SiteData): string {
   const L = SD.layout || 'agency';
   const body = renderBody(SD);

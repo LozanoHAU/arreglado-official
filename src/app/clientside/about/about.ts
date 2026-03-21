@@ -9,7 +9,7 @@ interface HallRentalForm {
   email: string;
   date: string;
   purpose: string;
-  guests: string;
+  guests: string | number; // ngModel on type="number" binds a number at runtime
   notes: string;
 }
 
@@ -62,6 +62,13 @@ export class AboutComponent {
     this.submitting.set(true);
     setTimeout(() => {
       try {
+        // Convert all field values to strings up front so the .trim() filter never
+        // receives a number (or null) from Angular's NumberValueAccessor on the
+        // guests input — previously this caused a silent TypeError that swallowed
+        // the entire submission.
+        const toStr = (v: string | number | null | undefined): string =>
+          v != null && v !== '' && !Number.isNaN(v) ? String(v) : '';
+
         const submission = {
           id: 'sub-' + Date.now(),
           type: 'hall-rental',
@@ -70,13 +77,13 @@ export class AboutComponent {
           status: 'pending',
           eventName: 'Hall Rental Inquiry',
           fields: [
-            { label: 'Full Name', value: this.form.name },
-            { label: 'Contact Number', value: this.form.phone },
-            { label: 'Email Address', value: this.form.email },
-            { label: 'Requested Date', value: this.form.date },
-            { label: 'Purpose / Event Type', value: this.form.purpose },
-            { label: 'Number of Guests', value: this.form.guests },
-            { label: 'Additional Notes', value: this.form.notes },
+            { label: 'Full Name',           value: toStr(this.form.name) },
+            { label: 'Contact Number',       value: toStr(this.form.phone) },
+            { label: 'Email Address',        value: toStr(this.form.email) },
+            { label: 'Requested Date',       value: toStr(this.form.date) },
+            { label: 'Purpose / Event Type', value: toStr(this.form.purpose) },
+            { label: 'Number of Guests',     value: toStr(this.form.guests) },
+            { label: 'Additional Notes',     value: toStr(this.form.notes) },
           ].filter(f => f.value.trim()),
         };
         const existing = JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || '[]');
