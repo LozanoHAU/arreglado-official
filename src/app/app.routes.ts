@@ -5,7 +5,7 @@ import { clientGuard } from './shared/client.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'client/eventpage', pathMatch: 'full' },
 
-  // ── ADMIN ──────────────────────────────────────────────────────────────────
+
   {
     path: 'admin',
     children: [
@@ -42,7 +42,7 @@ export const routes: Routes = [
     ],
   },
 
-  // ── CLIENT (shared navbar wrapper) ────────────────────────────────────────
+
   {
     path: 'client',
     canActivate: [clientGuard],
@@ -63,7 +63,7 @@ export const routes: Routes = [
     ],
   },
 
-  // Preview is standalone (no client navbar, used by admin) — stays authenticated
+
   {
     path: 'client/preview',
     canActivate: [authGuard],

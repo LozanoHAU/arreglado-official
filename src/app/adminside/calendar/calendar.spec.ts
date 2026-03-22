@@ -106,7 +106,7 @@ describe('CalendarComponent', () => {
   });
 
   it('onTemplateSelect should auto-fill title when title is empty', () => {
-    // Seed a fake template in localStorage so the component can find it
+
     const fakeTemplates = [{ id: 'tpl1', name: 'Vaccination Drive', createdAt: new Date().toISOString(), siteData: {} }];
     localStorage.setItem('ar_templates', JSON.stringify(fakeTemplates));
     component.openAddModal(null);

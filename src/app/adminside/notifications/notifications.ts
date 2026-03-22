@@ -46,7 +46,6 @@ export class NotificationsComponent implements OnInit {
   reportStartDate = signal('');
   reportEndDate = signal('');
 
-  // Calendar picker state
   reportCalOpen = signal<'start' | 'end' | null>(null);
   reportCalViewYear = signal(new Date().getFullYear());
   reportCalViewMonth = signal(new Date().getMonth());

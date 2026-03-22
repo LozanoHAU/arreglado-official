@@ -5,7 +5,7 @@ const SESSION_KEY = 'ar_admin_session';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // Restore from sessionStorage so page refreshes don't log out the admin
+
   private _isLoggedIn = signal(
     sessionStorage.getItem(SESSION_KEY) === '1'
   );

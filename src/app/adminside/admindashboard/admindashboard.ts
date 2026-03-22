@@ -23,8 +23,8 @@ export class AdmindashboardComponent implements OnInit {
   currentYear  = new Date().getFullYear();
 
   totalEvents    = signal(0);
-  publishedCount = signal(0); // events with a linked template
-  templateCount  = signal(0); // saved templates
+  publishedCount = signal(0); 
+  templateCount  = signal(0);
 
   recentEvents: RecentEvent[] = [];
 
@@ -36,7 +36,6 @@ export class AdmindashboardComponent implements OnInit {
     this.publishedCount.set(calEvents.filter(e => !!e.templateId).length);
     this.templateCount.set(templates.length);
 
-    // Most recent events first (by start date), up to 4
     this.recentEvents = [...calEvents]
       .sort((a, b) => b.start.localeCompare(a.start))
       .slice(0, 4)

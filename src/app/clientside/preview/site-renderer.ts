@@ -1,20 +1,9 @@
-/**
- * site-renderer.ts  — src/app/clientside/preview/site-renderer.ts
- *
- * CHANGED FUNCTIONS (3 only):
- *   1. renderField      — adds class="ff-wrap" data-label="..." to every wrapper div
- *   2. renderForm       — new eventName param + saves to ar_submissions localStorage
- *   3. renderFormSection — extracts event name from hero section, passes to renderForm
- *
- * Everything else is identical to the original.
- */
 import { SiteData, SiteSection } from '../../shared/event.model';
 
 function esc(s: any): string {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── NEW: needed so event name is safe inside the inline onclick JS string ──
 function escJs(s: any): string {
   return String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r');
 }
@@ -52,8 +41,6 @@ function socialBar(d: Record<string,any>, cls: string): string {
   return links.map(([url,icon]) => `<a href="${esc(url)}" class="${cls}" target="_blank" rel="noopener">${icon}</a>`).join('');
 }
 
-// ── CHANGED 1/3 ─────────────────────────────────────────────────────────────
-// Added class="ff-wrap" data-label="..." so the submit handler can read values
 function renderField(f: any, inputCls: string, taCls: string, selCls: string, lblCls: string): string {
   const req = f.required ? `<span style="color:var(--c1)">*</span>` : '';
   const lbl = `<label class="${lblCls}">${esc(f.label)}${req}</label>`;
@@ -67,8 +54,6 @@ function renderField(f: any, inputCls: string, taCls: string, selCls: string, lb
   return `<div class="ff-wrap" data-label="${esc(f.label)}">${lbl}<input type="${t}" class="${inputCls}" placeholder="${esc(f.placeholder||'')}" ${f.required?'required':''}></div>`;
 }
 
-// ── CHANGED 2/3 ─────────────────────────────────────────────────────────────
-// Added eventName parameter; onclick now collects fields + saves to ar_submissions
 function renderForm(sec: SiteSection, L: string, eventName: string): string {
   const d = sec.data;
   const PX = L === 'agency' ? 'a' : L === 'minimal' ? 'm' : 'b';
@@ -83,7 +68,7 @@ function renderForm(sec: SiteSection, L: string, eventName: string): string {
   while (i < fields.length) {
     const f = fields[i];
     if (f.width === 'half' && i+1 < fields.length && fields[i+1].width === 'half') {
-      rows += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">${renderField(f,inputCls,taCls,selCls,lblCls)}${renderField(fields[i+1],inputCls,taCls,selCls,lblCls)}</div>`;
+      rows += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">${renderField(f,inputCls,taCls,selCls,lblCls)}${renderField(fields[i+1],inputCls,taCls,selCls,lblCls)}</div>`;
       i += 2;
     } else {
       rows += renderField(f,inputCls,taCls,selCls,lblCls);
@@ -91,7 +76,8 @@ function renderForm(sec: SiteSection, L: string, eventName: string): string {
     }
   }
 
-  return `<div id="${secId}">${rows}
+  return `<div id="${secId}">
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">${rows}</div>
     <button type="button" class="${submitCls}" onclick="(function(btn){
       var wrap=document.getElementById('${secId}');
       var required=wrap.querySelectorAll('[required]');
@@ -132,8 +118,6 @@ function renderForm(sec: SiteSection, L: string, eventName: string): string {
   </div>`;
 }
 
-// ── SECTION RENDERERS (unchanged) ────────────────────────────────────────────
-
 function renderHero(sec: SiteSection, L: string, SD: SiteData): string {
   const d = sec.data;
   const heroImg = d['heroImg'] ? `style="background-image:url('${d['heroImg']}')"` : '';
@@ -141,11 +125,6 @@ function renderHero(sec: SiteSection, L: string, SD: SiteData): string {
   const brand = esc(d['navBrand'] || 'MyBrand');
 
   if (L === 'agency') return `
-    <nav class="a-nav">
-      <div class="a-nav-brand">${brand}</div>
-      <div class="a-nav-links">${nl}</div>
-      ${d['cta']?`<a href="${esc(d['ctaLink']||'#contact')}" class="a-nav-cta">${esc(d['cta'])}</a>`:''}
-    </nav>
     <section class="a-hero" id="hero">
       ${d['heroImg']?`<div class="a-hero-bg" ${heroImg}></div>`:''}
       <div class="a-hero-grad"></div>
@@ -161,11 +140,6 @@ function renderHero(sec: SiteSection, L: string, SD: SiteData): string {
     </section>`;
 
   if (L === 'minimal') return `
-    <nav class="m-nav">
-      <div class="m-nav-brand">${brand}</div>
-      <div class="m-nav-links">${nl}</div>
-      ${d['cta']?`<a href="${esc(d['ctaLink']||'#contact')}" class="m-nav-cta">${esc(d['cta'])}</a>`:''}
-    </nav>
     <section class="m-hero" id="hero">
       ${d['heroImg']?`<img src="${d['heroImg']}" class="m-hero-img" alt=""/>`:`<div class="m-hero-img-ph">🖼</div>`}
       <div class="m-hero-fade"></div>
@@ -181,11 +155,6 @@ function renderHero(sec: SiteSection, L: string, SD: SiteData): string {
     </section>`;
 
   return `
-    <nav class="b-nav">
-      <div class="b-nav-brand">${brand}</div>
-      <div class="b-nav-links">${nl}</div>
-      ${d['cta']?`<a href="${esc(d['ctaLink']||'#contact')}" class="b-nav-cta">${esc(d['cta'])}</a>`:''}
-    </nav>
     <section class="b-hero" id="hero">
       ${d['heroImg']?`<div class="b-hero-bg" ${heroImg}></div>`:''}
       <div class="b-hero-grad"></div>
@@ -306,8 +275,6 @@ function renderFeatures(sec: SiteSection, L: string): string {
   </section>`;
 }
 
-// ── CHANGED 3/3 ─────────────────────────────────────────────────────────────
-// Now extracts the event name from the hero section and passes it to renderForm
 function renderFormSection(sec: SiteSection, L: string, SD: SiteData): string {
   const d = sec.data;
   const hero = SD.sections.find(s => s.type === 'hero');
@@ -390,7 +357,6 @@ html{scroll-behavior:smooth}
 [data-r]{opacity:0;transform:translateY(22px);transition:opacity .55s,transform .55s}
 [data-r].vis{opacity:1;transform:none}
 @keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-/* ── AGENCY ── */
 body.agency{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--text:#e2e2ee;--muted:rgba(226,226,238,.45);--border:rgba(255,255,255,.07);background:var(--bg);color:var(--text)}
 .a-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 6vw;height:62px;background:rgba(10,10,15,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
 .a-nav-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#fff}
@@ -441,7 +407,7 @@ label.a-cf-lbl{display:block;font-size:.72rem;font-weight:700;text-transform:upp
 .a-cf-input,.a-cf-ta,.a-cf-sel{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;outline:none;transition:border-color .15s}
 .a-cf-input:focus,.a-cf-ta:focus,.a-cf-sel:focus{border-color:var(--c1)}
 .a-cf-ta{resize:vertical;min-height:100px;line-height:1.6}
-.a-cf-submit{padding:13px 32px;background:var(--c1);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:12px}
+.a-cf-submit{padding:13px 32px;background:var(--c1);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
 .a-cf-submit:hover{filter:brightness(1.15);transform:translateY(-1px)}
 .a-cf-success{padding:18px 22px;background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.25);border-radius:9px;color:#3ddc84;font-size:.88rem;margin-top:16px}
 .a-contact{padding:110px 6vw;background:var(--bg);text-align:center;position:relative;overflow:hidden}
@@ -453,13 +419,8 @@ label.a-cf-lbl{display:block;font-size:.72rem;font-weight:700;text-transform:upp
 .s-btn{width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;text-decoration:none;transition:all .15s;color:#fff}.s-btn:hover{background:rgba(124,106,255,.15);border-color:var(--c1)}
 .a-footer{background:var(--surface);border-top:1px solid var(--border);padding:18px 6vw;display:flex;align-items:center;justify-content:space-between}
 .a-footer span{font-size:.72rem;color:rgba(255,255,255,.2)}
-/* ── MINIMAL ── */
 body.minimal{background:#f8f5f0;color:#1a1a1a}
-.m-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 8vw;height:60px;background:rgba(248,245,240,.94);backdrop-filter:blur(10px);border-bottom:1px solid #e8e3db}
-.m-nav-brand{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:#1a1a1a}
-.m-nav-links{display:flex;gap:26px}.m-nav-links a{color:#999;font-size:.8rem;text-decoration:none;transition:color .15s}.m-nav-links a:hover{color:#1a1a1a}
-.m-nav-cta{padding:7px 18px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;background:#1a1a1a;color:#fff;transition:all .18s}.m-nav-cta:hover{background:var(--c1)}
-.m-hero{min-height:100vh;display:flex;align-items:center;padding:100px 8vw 80px;background:#f8f5f0;position:relative;overflow:hidden}
+.m-hero{min-height:100vh;display:flex;align-items:center;padding:80px 8vw 80px;background:#f8f5f0;position:relative;overflow:hidden}
 .m-hero-img{position:absolute;right:0;top:0;bottom:0;width:44vw;object-fit:cover;opacity:.9}
 .m-hero-img-ph{position:absolute;right:0;top:0;bottom:0;width:44vw;background:linear-gradient(135deg,#e8e3db,#d4cdc5);display:flex;align-items:center;justify-content:center;font-size:5rem}
 .m-hero-fade{position:absolute;right:0;top:0;bottom:0;width:44vw;background:linear-gradient(to right,#f8f5f0 20%,transparent);pointer-events:none}
@@ -498,11 +459,11 @@ body.minimal{background:#f8f5f0;color:#1a1a1a}
 .m-form-sec{padding:90px 8vw;background:#fff}
 .m-form-sec h2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,2.8vw,2.4rem);color:#1a1a1a;margin-bottom:8px}
 .m-form-sec>.form-desc{color:#888;margin-bottom:32px;font-size:.88rem;line-height:1.7}
-label.m-cf-lbl{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;margin-bottom:5px}
+label.m-cf-lbl{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#aaa;margin-bottom:6px}
 .m-cf-input,.m-cf-ta,.m-cf-sel{width:100%;background:#f8f5f0;border:1px solid #e0dbd2;border-radius:6px;color:#1a1a1a;font-family:'DM Sans',sans-serif;font-size:.88rem;padding:10px 14px;outline:none;transition:border-color .15s}
 .m-cf-input:focus,.m-cf-ta:focus,.m-cf-sel:focus{border-color:var(--c1)}
 .m-cf-ta{resize:vertical;min-height:100px;line-height:1.6}
-.m-cf-submit{padding:11px 28px;background:#1a1a1a;color:#fff;border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:.86rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:12px}.m-cf-submit:hover{background:var(--c1)}
+.m-cf-submit{padding:11px 28px;background:#1a1a1a;color:#fff;border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:.86rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}.m-cf-submit:hover{background:var(--c1)}
 .m-cf-success{padding:16px 20px;background:rgba(124,106,255,.06);border:1px solid rgba(124,106,255,.2);border-radius:7px;color:var(--c1);font-size:.86rem;margin-top:14px}
 .m-contact{padding:100px 8vw;background:#1a1a1a;text-align:center}
 .m-contact h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);color:#fff}
@@ -513,7 +474,6 @@ label.m-cf-lbl{display:block;font-size:.7rem;font-weight:700;text-transform:uppe
 .m-s-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.78rem;text-decoration:none;transition:all .15s;color:#fff}.m-s-btn:hover{background:var(--c1);border-color:var(--c1)}
 .m-footer{background:#111;padding:16px 8vw;display:flex;align-items:center;justify-content:space-between}
 .m-footer span{font-size:.7rem;color:#333}
-/* ── BOLD ── */
 body.bold{background:#080005;color:#fff}
 .b-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;height:58px;background:#080005;border-bottom:2px solid var(--c1)}
 .b-nav-brand{font-family:'Syne',sans-serif;font-weight:900;font-size:1rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c1)}
@@ -558,11 +518,11 @@ body.bold{background:#080005;color:#fff}
 .b-form-sec{padding:100px 5vw;background:#080005}
 .b-form-sec h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,3.5vw,2.8rem);font-weight:900;color:#fff;text-transform:uppercase;margin-bottom:8px}
 .b-form-sec>.form-desc{color:rgba(255,255,255,.35);margin-bottom:36px;font-size:.9rem;line-height:1.7}
-label.b-cf-lbl{display:block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:5px}
+label.b-cf-lbl{display:block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:6px}
 .b-cf-input,.b-cf-ta,.b-cf-sel{width:100%;background:#0d0009;border:1px solid rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.2);color:#fff;font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;outline:none;transition:border-color .15s;border-radius:0}
 .b-cf-input:focus,.b-cf-ta:focus,.b-cf-sel:focus{border-bottom-color:var(--c1)}
 .b-cf-ta{resize:vertical;min-height:100px;line-height:1.6}
-.b-cf-submit{padding:13px 36px;background:var(--c1);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.1em;transition:all .2s;margin-top:12px}.b-cf-submit:hover{background:var(--c2);transform:translateX(3px)}
+.b-cf-submit{padding:13px 36px;background:var(--c1);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.1em;transition:all .2s;margin-top:4px}.b-cf-submit:hover{background:var(--c2);transform:translateX(3px)}
 .b-cf-success{padding:16px 20px;background:rgba(124,106,255,.08);border-left:3px solid var(--c1);color:rgba(255,255,255,.75);font-size:.88rem;margin-top:16px}
 .b-contact{padding:120px 5vw;background:#080005;text-align:center;position:relative;overflow:hidden}
 .b-contact h2{font-family:'Syne',sans-serif;font-size:clamp(3rem,7vw,6rem);font-weight:900;color:#fff;text-transform:uppercase;line-height:.95;letter-spacing:-.03em}

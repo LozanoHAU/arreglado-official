@@ -11,5 +11,4 @@ export class AppComponent {
   title = 'arreglado';
 }
 
-// CLI-generated alias
 export { AppComponent as App };

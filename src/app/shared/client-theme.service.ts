@@ -18,8 +18,6 @@ export class ClientThemeService {
   private themeSignal = signal<ClientTheme>(DEFAULT_THEME);
 
   readonly theme = this.themeSignal.asReadonly();
-
-  /** CSS custom properties for the current theme */
   readonly cssVars = computed(() => {
     const t = this.themeSignal();
     return {
@@ -28,7 +26,6 @@ export class ClientThemeService {
     } as Record<string, string>;
   });
 
-  /** Set theme from SiteData (from event builder / active event) */
   setFromSiteData(data: SiteData | null): void {
     if (!data) {
       this.themeSignal.set(DEFAULT_THEME);

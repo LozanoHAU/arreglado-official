@@ -31,7 +31,6 @@ export class LoginComponent {
       return;
     }
     this.loading.set(true);
-    // Small delay for UX feedback
     setTimeout(() => {
       const ok = this.auth.login(this.username.trim(), this.password);
       this.loading.set(false);

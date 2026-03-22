@@ -57,7 +57,7 @@ app-about { display: contents; }
   box-shadow: 0 0 40px rgba(229,168,34,.15), inset 0 0 24px rgba(0,0,0,.2);
   overflow: hidden;
 }
-.au-seal-logo { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
 .au-hero-label { font-family: 'Oswald', sans-serif; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .18em; color: rgba(229,168,34,.8); margin-bottom: 12px; }
 .au-hero-title { font-family: 'Oswald', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 700; color: #fff; letter-spacing: .04em; text-transform: uppercase; line-height: 1.05; margin-bottom: 12px; }
 .au-hero-title em { font-style: normal; color: var(--gold); }

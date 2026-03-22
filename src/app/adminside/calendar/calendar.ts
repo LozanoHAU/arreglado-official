@@ -88,7 +88,6 @@ export class CalendarComponent implements OnInit {
       .slice(0, 6);
   });
 
-  // Panel
   activePanel = signal<CalendarEvent | null>(null);
   panelDateStr = computed(() => {
     const ev = this.activePanel();
@@ -104,7 +103,6 @@ export class CalendarComponent implements OnInit {
     return this.templates().find(t => t.id === ev.templateId)?.name ?? null;
   });
 
-  // Modal
   showModal     = signal(false);
   editingId     = signal<string | null>(null);
   modalTitle    = signal('New Event');
@@ -206,7 +204,6 @@ export class CalendarComponent implements OnInit {
   }
 
   openAddModal(dateStr: string | null, evData?: CalendarEvent): void {
-    // Refresh templates in case new ones were published
     this.templates.set(this.svc.loadTemplates());
     this.editingId.set(evData?.id ?? null);
     this.modalTitle.set(evData ? 'Edit Event' : 'New Event');
