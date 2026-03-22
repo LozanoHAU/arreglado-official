@@ -1,9 +1,10 @@
 <div class="shell">
 
-<!-- TOPBAR -->
 <header class="topbar">
   <a class="logo" routerLink="/admin/dashboard">
-    <div class="logo-mark">AR</div>
+    <div class="logo-mark">
+      <img src="/arregladologo.png" alt="Arreglado" class="logo-mark-img" />
+    </div>
     Arreglado
     <span class="logo-sub">Event Calendar</span>
   </a>
@@ -14,11 +15,9 @@
   </div>
 </header>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-inner">
 
-    <!-- Mini Calendar -->
     <div class="sb-section">
       <div class="sb-label">Navigate</div>
       <div class="mini-cal">
@@ -45,7 +44,6 @@
       </div>
     </div>
 
-    <!-- Legend -->
     <div class="sb-section">
       <div class="sb-label">Event Types</div>
       <div class="legend-item"><div class="legend-dot ev-blue-bg"></div>Multi-day Event</div>
@@ -55,7 +53,6 @@
       <div class="legend-item"><div class="legend-dot ev-purple-bg"></div>Meeting / Forum</div>
     </div>
 
-    <!-- Upcoming -->
     <div class="sb-section">
       <div class="sb-label">Upcoming</div>
       @if (upcoming().length === 0) {
@@ -84,9 +81,7 @@
   </div>
 </aside>
 
-<!-- MAIN -->
 <main class="main">
-  <!-- Calendar Nav -->
   <div class="cal-nav">
     <div class="cal-nav-center">
       <button class="nav-btn" (click)="prevMonth()">‹</button>
@@ -98,7 +93,6 @@
     </div>
   </div>
 
-  <!-- Day-of-week header -->
   <div class="dow-header">
     <div class="dow-cell weekend">Sun</div>
     <div class="dow-cell">Mon</div>
@@ -109,7 +103,6 @@
     <div class="dow-cell weekend">Sat</div>
   </div>
 
-  <!-- Calendar Grid -->
   <div class="cal-wrap">
     <div class="cal-grid">
       @for (cell of grid(); track $index) {
@@ -139,9 +132,8 @@
   </div>
 </main>
 
-</div><!-- end shell -->
+</div>
 
-<!-- DETAIL PANEL -->
 <div class="detail-panel" [class.open]="activePanel()">
   @if (activePanel(); as ev) {
     <div class="panel-header">
@@ -171,7 +163,6 @@
         </div>
       }
 
-      <!-- Live Page Status -->
       <div class="panel-row panel-live-row">
         <div class="panel-row-label">🌐 Public Event Page</div>
         @if (panelTemplateName()) {
@@ -197,7 +188,6 @@
   }
 </div>
 
-<!-- ADD / EDIT MODAL -->
 @if (showModal()) {
   <div class="modal-bg open" (click)="$event.target === $event.currentTarget && closeModal()">
     <div class="modal-box">
@@ -207,7 +197,6 @@
       </div>
       <div class="modal-body">
 
-        <!-- Template Selector — top of form -->
         <div class="fg tpl-selector-fg">
           <label class="fl">🏷 Event Page Template</label>
           @if (templates().length === 0) {
@@ -277,7 +266,6 @@
   </div>
 }
 
-<!-- TOAST -->
 @if (toastMsg()) {
   <div class="toast show">{{ toastMsg() }}</div>
 }

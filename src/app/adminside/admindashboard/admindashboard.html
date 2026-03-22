@@ -1,6 +1,8 @@
 <header class="topbar">
   <a class="logo" routerLink="/admin/dashboard">
-    <div class="logo-mark">AR</div>
+    <div class="logo-mark">
+      <img src="/arregladologo.png" alt="Arreglado" class="logo-mark-img" />
+    </div>
     Arreglado
     <span class="logo-sub">Admin Dashboard</span>
   </a>
@@ -12,7 +14,6 @@
 
 <div class="page">
 
-  <!-- HERO -->
   <div class="dashboard-hero">
     <div class="hero-top">
       <div>
@@ -45,14 +46,12 @@
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="content">
 
     <div class="section-label">Main Tools</div>
 
     <div class="cards">
 
-      <!-- EVENT BUILDER -->
       <a class="card card-green" routerLink="/admin/eventbuilder">
         <div class="card-top">
           <div class="card-icon-wrap green">🏗️</div>
@@ -70,7 +69,6 @@
         </div>
       </a>
 
-      <!-- CALENDAR -->
       <a class="card card-gold" routerLink="/admin/calendar">
         <div class="card-top">
           <div class="card-icon-wrap gold">📅</div>
@@ -88,7 +86,6 @@
         </div>
       </a>
 
-      <!-- NOTIFICATIONS (coming soon) -->
       <a class="card card-gold" routerLink="/admin/notifications">
         <div class="card-top">
           <div class="card-icon-wrap slate">🔔</div>
@@ -108,7 +105,6 @@
 
     </div>
 
-    <!-- HOW IT WORKS -->
     <div class="section-label">How It Works</div>
     <div class="flow-steps">
       <div class="flow-step">
@@ -136,7 +132,6 @@
       </div>
     </div>
 
-    <!-- RECENT EVENTS -->
     <div class="section-label" style="margin-top:36px">Recent Calendar Events</div>
     @if (recentEvents.length === 0) {
       <div class="recent-empty">
@@ -163,7 +158,6 @@
       </div>
     }
 
-    <!-- QUICK TIPS -->
     <div class="section-label" style="margin-top:36px">Quick Tips</div>
     <div class="tips-grid">
       <div class="tip">
@@ -198,7 +192,6 @@
 
   </div>
 
-  <!-- FOOTER -->
   <div class="dash-footer">
     <div class="footer-left">
       <strong>Arreglado</strong> &nbsp;·&nbsp; Barangay Pandacaqui Event Management System

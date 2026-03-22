@@ -1,9 +1,10 @@
 <div class="shell">
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div class="logo">
-    <div class="logo-mark">AR</div>
+    <div class="logo-mark">
+      <img src="/arregladologo.png" alt="Arreglado" class="logo-mark-img" />
+    </div>
     Arreglado
     <span class="logo-sub">Barangay Event Builder</span>
   </div>
@@ -17,7 +18,6 @@
     <a routerLink="/admin/dashboard" class="btn btn-outline">← Dashboard</a>
     <button class="btn btn-outline" (click)="openPreview()">Preview ↗</button>
 
-    <!-- Split Save Button -->
     <div class="split-btn">
       <button class="btn btn-publish split-main" (click)="saveDraft()">Save Draft</button>
       <button class="split-arrow" (click)="toggleSaveMenu($event)" title="More options">▾</button>
@@ -34,15 +34,12 @@
   </div>
 </header>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-inner">
 
-    <!-- CONTENT TAB -->
     @if (activeTab() === 'content') {
       <div>
 
-        <!-- Color Presets -->
         <div class="sb-section" style="margin-top:6px">
           <div class="sb-label">Color Presets</div>
           <div class="theme-row">
@@ -136,7 +133,6 @@
       </div>
     }
 
-    <!-- TEMPLATES TAB SIDEBAR -->
     @if (activeTab() === 'templates') {
       <div>
         <div class="sb-section" style="margin-top:8px">
@@ -160,7 +156,6 @@
   </div>
 </aside>
 
-<!-- MAIN EDITOR -->
 <main class="main">
   <div class="editor-area" id="editor-area">
 
@@ -228,7 +223,6 @@
           <div class="sec-type-badge">{{ secIcon(sec.type) }} {{ sec.type.replaceAll('-', ' ') }}</div>
         </div>
 
-        <!-- ── HERO ── -->
         @if (sec.type === 'hero') {
           <div class="fg">
             <div class="fg-row two">
@@ -283,7 +277,6 @@
           </div>
         }
 
-        <!-- ── ABOUT SIMPLE ── -->
         @if (sec.type === 'about-simple') {
           <div class="fg">
             <div class="fg-row two">
@@ -333,7 +326,6 @@
           </div>
         }
 
-        <!-- ── ABOUT CENTERED ── -->
         @if (sec.type === 'about-centered') {
           <div class="fg">
             <div>
@@ -379,7 +371,6 @@
           </div>
         }
 
-        <!-- ── ABOUT STATS ── -->
         @if (sec.type === 'about-stats') {
           <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
             <div>
@@ -418,7 +409,6 @@
           </div>
         }
 
-        <!-- ── FEATURES ── -->
         @if (sec.type === 'features') {
           <div class="fg">
             <label class="fl">Section Title</label>
@@ -453,7 +443,6 @@
           }
         }
 
-        <!-- ── FORM ── -->
         @if (sec.type === 'form') {
           <div class="fg">
             <div class="fg-row two">
@@ -549,7 +538,6 @@
           </div>
         }
 
-        <!-- ── CONTACT ── -->
         @if (sec.type === 'contact') {
           <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
             <div>
@@ -615,9 +603,8 @@
   </div>
 </main>
 
-</div><!-- end shell -->
+</div>
 
-<!-- ADD SECTION MODAL -->
 <div class="modal-bg" [class.open]="showModal()" (click)="$event.target === $event.currentTarget && showModal.set(false)">
   <div class="modal-box">
     <div class="modal-mast">
@@ -643,7 +630,6 @@
   </div>
 </div>
 
-<!-- PUBLISH AS TEMPLATE MODAL -->
 @if (showPublishModal()) {
   <div class="modal-bg open" (click)="$event.target === $event.currentTarget && closePublishModal()">
     <div class="modal-box" style="width:440px">
@@ -677,5 +663,4 @@
   </div>
 }
 
-<!-- TOAST -->
 <div class="toast" [class.show]="toastMsg()" [class.warn]="toastWarn()">{{ toastMsg() }}</div>
