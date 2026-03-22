@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
-import { CalendarEvent, EventTemplate, SiteData, SiteSection } from './event.model';
+import { CalendarEvent, EventTemplate, SiteData } from './event.model';
 
-const SF_DATA_KEY   = 'sf_data';       // current draft → drives Preview page
-const TEMPLATES_KEY = 'ar_templates';  // saved templates → selectable in Calendar
-const CAL_KEY       = 'ar_calendar_events'; // calendar events (with optional templateId)
+const SF_DATA_KEY   = 'sf_data';
+const TEMPLATES_KEY = 'ar_templates';
+const CAL_KEY       = 'ar_calendar_events';
 
-// ─── DEFAULT DATA FACTORIES ───────────────────────────────────────────────────
 export function defaultData(type: string): Record<string, any> {
   switch (type) {
     case 'hero':
@@ -36,6 +35,8 @@ export function defaultData(type: string): Record<string, any> {
   }
 }
 
+
+
 const DEFAULT_SITE: SiteData = {
   layout: 'agency',
   sections: [
@@ -55,7 +56,6 @@ function parseLocalDate(s: string): Date {
 @Injectable({ providedIn: 'root' })
 export class EventService {
 
-  // ── Draft (Preview page) ───────────────────────────────────────────────────
   loadSiteData(): SiteData {
     try {
       const raw = localStorage.getItem(SF_DATA_KEY);
@@ -72,7 +72,6 @@ export class EventService {
     localStorage.setItem(SF_DATA_KEY, JSON.stringify(data));
   }
 
-  // ── Templates ──────────────────────────────────────────────────────────────
   loadTemplates(): EventTemplate[] {
     try {
       const raw = localStorage.getItem(TEMPLATES_KEY);
@@ -88,9 +87,14 @@ export class EventService {
       createdAt: new Date().toISOString(),
       siteData: JSON.parse(JSON.stringify(data)),
     };
-    templates.unshift(template); // newest first
+    templates.unshift(template);
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
     return template;
+  }
+
+  renameTemplate(id: string, name: string): void {
+    const templates = this.loadTemplates().map(t => t.id === id ? { ...t, name: name.trim() } : t);
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
   }
 
   deleteTemplate(id: string): void {
@@ -98,22 +102,18 @@ export class EventService {
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
   }
 
-  // ── Calendar Events ────────────────────────────────────────────────────────
   loadCalendarEvents(): CalendarEvent[] {
     try {
       const raw = localStorage.getItem(CAL_KEY);
       if (raw) return JSON.parse(raw);
     } catch { /* ignore */ }
-    return []; // no predefined events — admin starts with a clean slate
+    return [];
   }
 
   saveCalendarEvents(events: CalendarEvent[]): void {
     localStorage.setItem(CAL_KEY, JSON.stringify(events));
   }
 
-  // ── Live Eventpage Resolution ──────────────────────────────────────────────
-  // Returns the SiteData for whichever calendar event is currently active
-  // (today falls between its start and end dates AND it has a linked template).
   getActiveEventData(): SiteData | null {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -133,7 +133,6 @@ export class EventService {
     return null;
   }
 
-  // Returns the next upcoming calendar event (with or without a template).
   getNextUpcomingEvent(): CalendarEvent | null {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -143,7 +142,6 @@ export class EventService {
       .sort((a, b) => a.start.localeCompare(b.start))[0] ?? null;
   }
 
-  // Legacy — kept so old specs don't break; use getActiveEventData() instead.
   getPublishedData(): SiteData | null { return this.getActiveEventData(); }
   publishSiteData(data: SiteData): void { this.saveSiteData(data); }
   isPublished(_data: SiteData): boolean { return false; }

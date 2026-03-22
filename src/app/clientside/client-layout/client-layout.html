@@ -1,0 +1,12 @@
+<div class="client-theme" [ngClass]="themeService.theme().layout" [ngStyle]="themeService.cssVars()">
+  <nav class="client-nav">
+    <a routerLink="/client/eventpage" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="client-nav-brand">Barangay Pandacaqui</a>
+    <div class="client-nav-links">
+      <a routerLink="/client/preview" routerLinkActive="active" class="client-nav-link">Official Event</a>
+      <a routerLink="/client/about" routerLinkActive="active" class="client-nav-link">About Us</a>
+    </div>
+  </nav>
+  <main class="client-main">
+    <router-outlet />
+  </main>
+</div>

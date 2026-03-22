@@ -9,11 +9,12 @@
   </div>
   <div class="topbar-center">
     <button class="tab-btn" [class.active]="activeTab()==='content'" (click)="switchTab('content')">Content</button>
-    <button class="tab-btn" [class.active]="activeTab()==='theme'"   (click)="switchTab('theme')">Theme</button>
+    <button class="tab-btn" [class.active]="activeTab()==='templates'" (click)="switchTab('templates')">Templates</button>
   </div>
   <div class="topbar-right">
     <div class="status-dot" [class.saved]="isDraftSaved()"></div>
     <span class="status-txt">{{ isDraftSaved() ? 'Draft saved' : 'Saving…' }}</span>
+    <a routerLink="/admin/dashboard" class="btn btn-outline">← Dashboard</a>
     <button class="btn btn-outline" (click)="openPreview()">Preview ↗</button>
 
     <!-- Split Save Button -->
@@ -40,15 +41,38 @@
     <!-- CONTENT TAB -->
     @if (activeTab() === 'content') {
       <div>
-        <div class="brgy-banner">
-          <div class="brgy-banner-icon">🏛️</div>
-          <div class="brgy-banner-text">
-            <strong>Arreglado</strong>
-            Build your barangay event page quickly and easily.
+
+        <!-- Color Presets -->
+        <div class="sb-section" style="margin-top:6px">
+          <div class="sb-label">Color Presets</div>
+          <div class="theme-row">
+            @for (pr of PRESETS; track pr.p) {
+              <div class="tp" [class.active]="SD().theme.primary===pr.p"
+                [style.background]="pr.p" [title]="pr.label"
+                (click)="applyPreset(pr.p, pr.s)"></div>
+            }
           </div>
         </div>
 
-        <div class="sb-section" style="margin-top:8px">
+        <div class="sb-section">
+          <div class="sb-label">Custom Colors</div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:0 4px">
+            <div class="mini-color-field">
+              <label class="fl" style="margin:0">Primary</label>
+              <div class="cswatch"><input type="color" [value]="SD().theme.primary" (input)="setThemeField('primary', $any($event.target).value)"/></div>
+              <input class="chex" [value]="SD().theme.primary" (input)="setThemeField('primary', $any($event.target).value)" placeholder="#3d9e52"/>
+            </div>
+            <div class="mini-color-field">
+              <label class="fl" style="margin:0">Secondary</label>
+              <div class="cswatch"><input type="color" [value]="SD().theme.secondary" (input)="setThemeField('secondary', $any($event.target).value)"/></div>
+              <input class="chex" [value]="SD().theme.secondary" (input)="setThemeField('secondary', $any($event.target).value)" placeholder="#d4a017"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="sb-divider"></div>
+
+        <div class="sb-section">
           <div class="sb-label">Page Layout</div>
           <div class="lc" [class.active]="SD().layout==='agency'" (click)="setLayout('agency')">
             <div class="lc-thumb" style="background:linear-gradient(135deg,#0d1a0f,#1a3520)">
@@ -112,38 +136,24 @@
       </div>
     }
 
-    <!-- THEME TAB -->
-    @if (activeTab() === 'theme') {
+    <!-- TEMPLATES TAB SIDEBAR -->
+    @if (activeTab() === 'templates') {
       <div>
-        <div class="sb-section">
-          <div class="sb-label">Color Presets</div>
-          <div class="theme-row">
-            @for (pr of PRESETS; track pr.p) {
-              <div class="tp" [class.active]="SD().theme.primary===pr.p"
-                [style.background]="pr.p" [title]="pr.label"
-                (click)="applyPreset(pr.p, pr.s)"></div>
+        <div class="sb-section" style="margin-top:8px">
+          <div class="sb-label">Templates <span class="sb-label-count">{{ templates().length }}</span></div>
+          <div class="tpl-sb-hint">
+            @if (templates().length === 0) {
+              <span>No templates saved yet. Use <strong>Publish as Template</strong> from the Save Draft menu to create one.</span>
+            } @else {
+              <span>Load a template into the editor to continue working on it, or manage your saved layouts below.</span>
             }
           </div>
         </div>
-        <div class="sb-section">
-          <div class="sb-label">Custom Colors</div>
-          <div style="display:flex;flex-direction:column;gap:8px;padding:0 4px">
-            <div class="mini-color-field">
-              <label class="fl" style="margin:0">Primary</label>
-              <div class="cswatch"><input type="color" [value]="SD().theme.primary" (input)="setThemeField('primary', $any($event.target).value)"/></div>
-              <input class="chex" [value]="SD().theme.primary" (input)="setThemeField('primary', $any($event.target).value)" placeholder="#3d9e52"/>
-            </div>
-            <div class="mini-color-field">
-              <label class="fl" style="margin:0">Secondary</label>
-              <div class="cswatch"><input type="color" [value]="SD().theme.secondary" (input)="setThemeField('secondary', $any($event.target).value)"/></div>
-              <input class="chex" [value]="SD().theme.secondary" (input)="setThemeField('secondary', $any($event.target).value)" placeholder="#d4a017"/>
-            </div>
+        @if (templates().length > 0) {
+          <div class="sb-section">
+            <button class="btn-add-section" (click)="openPublishModal()">🏷 Save Current as Template</button>
           </div>
-        </div>
-        <div class="sb-section">
-          <div class="sb-label">Custom CSS</div>
-          <textarea class="code-field" [value]="SD().theme.customCss" (input)="setThemeField('customCss', $any($event.target).value)" placeholder="/* override anything */" style="margin:0 4px;width:calc(100% - 8px)"></textarea>
-        </div>
+        }
       </div>
     }
 
@@ -154,19 +164,58 @@
 <main class="main">
   <div class="editor-area" id="editor-area">
 
-    @if (activeTab() === 'theme') {
-      <div class="sec-header">
-        <div class="sec-header-text"><h2>Theme &amp; Colors</h2><p>Global appearance settings — applied across all sections.</p></div>
-      </div>
-      <div class="fg">
-        <label class="fl">Custom CSS Overrides</label>
-        <textarea class="code-field" [value]="SD().theme.customCss" (input)="setThemeField('customCss',$any($event.target).value)" placeholder="/* Paste any CSS here to override the client page */"></textarea>
-        <div class="fhint">Applied as a &lt;style&gt; tag on the client page after all other styles.</div>
-      </div>
-      <div class="fg">
-        <label class="fl">Typography Note</label>
-        <p style="font-size:.82rem;color:var(--muted);line-height:1.7">Each layout uses its own typeface pairing. <em>Official</em> uses Syne + DM Sans, <em>Clean</em> uses Playfair Display + DM Sans, and <em>Bold</em> uses Syne with heavy uppercase treatments. Use Custom CSS above to override if needed.</p>
-      </div>
+    @if (activeTab() === 'templates') {
+
+      @if (templates().length === 0) {
+        <div class="empty-editor">
+          <div style="font-size:3rem">🏷️</div>
+          <h3>No Templates Yet</h3>
+          <p>Click the ▾ arrow next to Save Draft and choose "Publish as Template" to save your current layout as a reusable template.</p>
+        </div>
+      } @else {
+        <div class="sec-header">
+          <div class="sec-header-text">
+            <h2>Saved Templates</h2>
+            <p>Load a template into the editor, rename it, or delete it permanently.</p>
+          </div>
+          <button class="btn btn-publish" (click)="openPublishModal()">🏷 Save Current as Template</button>
+        </div>
+        <div class="tpl-list">
+          @for (t of templates(); track t.id) {
+            <div class="tpl-card">
+              <div class="tpl-card-main">
+                <div class="tpl-card-icon">🏷</div>
+                <div class="tpl-card-info">
+                  @if (renamingId() === t.id) {
+                    <input
+                      class="tpl-rename-input"
+                      [ngModel]="renameValue()"
+                      (ngModelChange)="renameValue.set($event)"
+                      (keyup.enter)="saveRename()"
+                      (keyup.escape)="cancelRename()"
+                      placeholder="Template name…"
+                    />
+                  } @else {
+                    <div class="tpl-card-name">{{ t.name }}</div>
+                    <div class="tpl-card-meta">Saved {{ formatDate(t.createdAt) }} · {{ t.siteData.sections.length }} section{{ t.siteData.sections.length !== 1 ? 's' : '' }} · {{ t.siteData.layout }}</div>
+                  }
+                </div>
+                <div class="tpl-card-actions">
+                  @if (renamingId() === t.id) {
+                    <button class="btn btn-accent" (click)="saveRename()">Save</button>
+                    <button class="btn btn-outline" (click)="cancelRename()">Cancel</button>
+                  } @else {
+                    <button class="btn btn-accent" (click)="loadTemplateById(t.id)">⬇ Load</button>
+                    <button class="btn btn-outline" (click)="startRename(t.id)">Rename</button>
+                    <button class="btn btn-danger" (click)="deleteTemplateById(t.id)">Delete</button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
     } @else {
 
       @if (getActiveSec(); as sec) {

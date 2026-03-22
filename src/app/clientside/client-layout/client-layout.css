@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap');
+
+/* Theme wrapper inherits --c1, --c2 from ngStyle */
+.client-theme {
+  min-height: 100%;
+}
+
+/* Layout-specific variables (mirror site-renderer) */
+.client-theme.agency {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --text: #e2e2ee;
+  --muted: rgba(226, 226, 238, 0.45);
+  --border: rgba(255, 255, 255, 0.07);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.client-theme.minimal {
+  --bg: #f8f5f0;
+  --surface: #fff;
+  --text: #1a1a1a;
+  --muted: #888;
+  --border: #e8e3db;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.client-theme.bold {
+  --bg: #080005;
+  --surface: #0d0009;
+  --text: #fff;
+  --muted: rgba(255, 255, 255, 0.38);
+  --border: rgba(255, 255, 255, 0.15);
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Base nav */
+.client-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  height: 62px;
+  font-family: 'Syne', sans-serif;
+}
+
+/* Agency: dark nav */
+.client-theme.agency .client-nav {
+  background: rgba(10, 10, 15, 0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.client-theme.agency .client-nav-brand {
+  color: #fff;
+}
+
+.client-theme.agency .client-nav-link {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.client-theme.agency .client-nav-link:hover,
+.client-theme.agency .client-nav-link.active {
+  color: #fff;
+}
+
+/* Minimal: light nav */
+.client-theme.minimal .client-nav {
+  background: rgba(248, 245, 240, 0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e8e3db;
+}
+
+.client-theme.minimal .client-nav-brand {
+  color: #1a1a1a;
+}
+
+.client-theme.minimal .client-nav-link {
+  color: #999;
+}
+
+.client-theme.minimal .client-nav-link:hover,
+.client-theme.minimal .client-nav-link.active {
+  color: #1a1a1a;
+}
+
+/* Bold: dark with accent */
+.client-theme.bold .client-nav {
+  background: #080005;
+  border-bottom: 2px solid var(--c1);
+}
+
+.client-theme.bold .client-nav-brand {
+  color: var(--c1);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.client-theme.bold .client-nav-link {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.client-theme.bold .client-nav-link:hover,
+.client-theme.bold .client-nav-link.active {
+  color: var(--c1);
+}
+
+/* Shared nav elements */
+.client-nav-brand {
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.client-nav-brand:hover {
+  opacity: 0.9;
+}
+
+.client-nav-links {
+  display: flex;
+  gap: 28px;
+}
+
+.client-nav-link {
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.18s;
+}
+
+.client-main {
+  padding-top: 62px;
+  min-height: calc(100vh - 62px);
+}

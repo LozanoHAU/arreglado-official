@@ -16,6 +16,7 @@ app-eventbuilder { display: contents; }
   --gold:#E5A822;
   --gold-dim:rgba(229,168,34,.1);
   --red:#D12A2F;
+  --red-dim:rgba(209,42,47,.1);
   --green:#2C7A3B;
   --amber:#E5A822;
   --text:#1C2920;
@@ -57,10 +58,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 
 /* buttons */
 .btn{padding:6px 16px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;border:none;transition:all .16s;white-space:nowrap}
-.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border);text-decoration:none;display:inline-flex;align-items:center}
 .btn-outline:hover{color:var(--text);border-color:var(--border2)}
 .btn-accent{background:var(--accent);color:#fff}
 .btn-accent:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(209,42,47,.22)}
+.btn-danger:hover{background:rgba(209,42,47,.18)}
 .btn-publish{
   background:linear-gradient(135deg,var(--accent),#1E5C2A);color:#fff;font-weight:700;
   letter-spacing:.04em;font-family:'Oswald',sans-serif;font-size:.82rem;
@@ -116,6 +119,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .sb-label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:0 6px 8px;display:flex;align-items:center;justify-content:space-between;font-family:'Oswald',sans-serif}
 .sb-label-count{background:var(--surface3);color:var(--accent);border-radius:10px;padding:1px 8px;font-size:.62rem;font-family:'DM Sans',sans-serif;font-weight:600}
 
+/* templates sidebar hint */
+.tpl-sb-hint{font-size:.75rem;color:var(--muted);padding:0 6px;line-height:1.65}
+.tpl-sb-hint strong{color:var(--accent)}
+
 /* layout cards */
 .lc{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer;border:1.5px solid transparent;margin-bottom:4px;transition:all .14s}
 .lc:hover{background:var(--surface2)}
@@ -170,6 +177,42 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .cswatch input{width:200%;height:200%;border:none;outline:none;transform:translate(-25%,-25%);cursor:pointer}
 .chex{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:.72rem;padding:4px 7px;font-family:monospace;outline:none}
 .chex:focus{border-color:var(--accent)}
+
+/* ── TEMPLATE CARDS ── */
+.tpl-list{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.tpl-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:border-color .15s, box-shadow .15s;
+}
+.tpl-card:hover{border-color:var(--accent);box-shadow:0 4px 18px rgba(44,122,59,.08)}
+.tpl-card-main{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.tpl-card-icon{font-size:1.5rem;flex-shrink:0}
+.tpl-card-info{flex:1;min-width:0}
+.tpl-card-name{
+  font-family:'Oswald',sans-serif;
+  font-size:.95rem;
+  font-weight:600;
+  letter-spacing:.03em;
+  color:var(--text);
+  margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tpl-card-meta{font-size:.72rem;color:var(--muted)}
+.tpl-card-actions{display:flex;gap:6px;flex-shrink:0}
+.tpl-rename-input{
+  width:100%;
+  background:var(--bg);
+  border:1.5px solid var(--accent);
+  border-radius:6px;
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:.88rem;
+  padding:6px 10px;
+  outline:none;
+}
 
 /* ── MAIN EDITOR ── */
 .main{overflow-y:auto;background:var(--bg)}
@@ -308,18 +351,9 @@ label.fl{display:block;font-size:.68rem;font-weight:600;text-transform:uppercase
 .code-field{font-family:'DM Mono',monospace;font-size:.78rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);width:100%;padding:10px 12px;min-height:80px;resize:vertical;outline:none;line-height:1.6}
 .code-field:focus{border-color:var(--accent)}
 
-/* barangay info banner */
-.brgy-banner{
-  display:flex;align-items:center;gap:12px;padding:10px 16px;
-  background:linear-gradient(135deg,rgba(44,122,59,.08),rgba(229,168,34,.08));
-  border:1px solid rgba(44,122,59,.2);border-radius:8px;
-  margin:12px 12px 8px;
-}
-.brgy-banner-icon{font-size:1.3rem;flex-shrink:0}
-.brgy-banner-text{font-size:.72rem;color:var(--muted);line-height:1.5}
-.brgy-banner-text strong{color:var(--accent);font-family:'Oswald',sans-serif;letter-spacing:.03em;display:block;margin-bottom:1px;font-size:.8rem}
-
 @media(max-width:900px){
   .stg{grid-template-columns:1fr 1fr}
   .split-menu{right:auto;left:0}
+  .tpl-card-main{flex-wrap:wrap;gap:10px}
+  .tpl-card-actions{width:100%;justify-content:flex-end}
 }

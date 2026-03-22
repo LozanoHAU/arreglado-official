@@ -45,7 +45,7 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     theme: { primary: '#3d9e52', secondary: '#d4a017', customCss: '' },
   });
 
-  activeTab    = signal<'content' | 'theme'>('content');
+  activeTab    = signal<'content' | 'templates'>('content');
   activeSec    = signal<string | null>(null);
   showModal    = signal(false);
   isDraftSaved = signal(true);
@@ -54,21 +54,22 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
   toastTimer: any;
   saveTimer:  any;
 
-  // Split button dropdown
   saveMenuOpen = signal(false);
 
-  // Publish-as-template modal
   showPublishModal = signal(false);
   templateName     = signal('');
 
-  // Drag state
+  renamingId  = signal<string | null>(null);
+  renameValue = signal('');
+
   dragSrcId   = signal<string | null>(null);
   dragOverId  = signal<string | null>(null);
 
-  // Open form-field accordion
   openFfIds   = signal<Set<string>>(new Set());
 
   sectionCount = computed(() => this.SD().sections.length);
+
+  templates = signal(this.svc.loadTemplates());
 
   sectionTypes = computed(() => {
     const existing = this.SD().sections.map(s => s.type);
@@ -99,8 +100,7 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     clearTimeout(this.toastTimer);
   }
 
-  // ── Tab / Layout / Section helpers ─────────────────────────────────────────
-  switchTab(tab: 'content' | 'theme'): void { this.activeTab.set(tab); }
+  switchTab(tab: 'content' | 'templates'): void { this.activeTab.set(tab); }
   setLayout(id: string): void { this.SD.update(d => ({ ...d, layout: id as any })); this.autoSave(); }
 
   getSec(id: string): SiteSection | undefined { return this.SD().sections.find(s => s.id === id); }
@@ -131,7 +131,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     this.toast('Section removed');
   }
 
-  // ── Field setters ──────────────────────────────────────────────────────────
   setField(secId: string, key: string, val: any): void {
     this.SD.update(d => ({
       ...d,
@@ -153,7 +152,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     this.autoSave();
   }
 
-  // ── Stats helpers ──────────────────────────────────────────────────────────
   setStatField(secId: string, i: number, key: string, val: string): void {
     const sec = this.getSec(secId);
     if (!sec) return;
@@ -172,7 +170,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     this.setField(secId, 'stats', sec.data['stats'].filter((_: any, idx: number) => idx !== i));
   }
 
-  // ── Features helpers ───────────────────────────────────────────────────────
   setFeatField(secId: string, i: number, key: string, val: string): void {
     const sec = this.getSec(secId);
     if (!sec) return;
@@ -195,7 +192,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     return val.split(',').map(x => x.trim());
   }
 
-  // ── Form field helpers ─────────────────────────────────────────────────────
   setFFField(secId: string, fieldId: string, key: string, val: any): void {
     const sec = this.getSec(secId);
     if (!sec) return;
@@ -224,7 +220,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
   }
   isFfOpen(id: string): boolean { return this.openFfIds().has(id); }
 
-  // ── Form field drag ────────────────────────────────────────────────────────
   ffDragSrc: { secId: string; i: number } | null = null;
   onFFDragStart(secId: string, i: number): void { this.ffDragSrc = { secId, i }; }
   onFFDrop(secId: string, i: number): void {
@@ -238,7 +233,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     this.ffDragSrc = null;
   }
 
-  // ── Image handling ─────────────────────────────────────────────────────────
   handleImg(secId: string, key: string, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.[0]) return;
@@ -249,7 +243,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     reader.readAsDataURL(input.files[0]);
   }
 
-  // ── Section drag & drop ────────────────────────────────────────────────────
   onDragStart(id: string): void { this.dragSrcId.set(id); }
   onDragOver(id: string, e: DragEvent): void { e.preventDefault(); this.dragOverId.set(id); }
   onDragLeave(): void { this.dragOverId.set(null); }
@@ -271,8 +264,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
   }
   onDragEnd(): void { this.dragSrcId.set(null); this.dragOverId.set(null); }
 
-  // ── Save / Publish ─────────────────────────────────────────────────────────
-  /** Debounced auto-save triggered by every field change. Updates the draft (preview). */
   autoSave(): void {
     this.isDraftSaved.set(false);
     clearTimeout(this.saveTimer);
@@ -282,7 +273,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     }, 400);
   }
 
-  /** Explicit "Save Draft" — saves immediately and shows feedback. */
   saveDraft(): void {
     clearTimeout(this.saveTimer);
     this.svc.saveSiteData(this.SD());
@@ -296,10 +286,8 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     this.saveMenuOpen.update(v => !v);
   }
 
-  /** Opens the "Publish as Template" modal. */
   openPublishModal(): void {
     this.saveMenuOpen.set(false);
-    // Pre-fill template name from hero headline if available
     const hero = this.SD().sections.find(s => s.type === 'hero');
     const heroTitle = hero?.data['headline']?.trim() || hero?.data['navBrand']?.trim() || '';
     this.templateName.set(heroTitle);
@@ -308,15 +296,13 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
 
   closePublishModal(): void { this.showPublishModal.set(false); }
 
-  /** Saves current state as a named template in the templates store. */
   publishAsTemplate(): void {
     const name = this.templateName().trim();
     if (!name) { this.toast('Please give this template a name.', true); return; }
-    // Force-save the draft first
     this.svc.saveSiteData(this.SD());
     this.isDraftSaved.set(true);
-    // Save as template
     this.svc.saveTemplate(name, this.SD());
+    this.templates.set(this.svc.loadTemplates());
     this.closePublishModal();
     this.toast(`🏷 Template "${name}" saved! Link it to an event in the Calendar.`);
   }
@@ -327,7 +313,49 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     window.open('/client/preview', '_blank');
   }
 
-  // ── Toast ──────────────────────────────────────────────────────────────────
+  loadTemplateById(id: string): void {
+    const t = this.templates().find(t => t.id === id);
+    if (!t) return;
+    this.SD.set(JSON.parse(JSON.stringify(t.siteData)));
+    const secs = this.SD().sections;
+    this.activeSec.set(secs.length > 0 ? secs[0].id : null);
+    this.switchTab('content');
+    this.autoSave();
+    this.toast(`✓ Template "${t.name}" loaded into editor`);
+  }
+
+  deleteTemplateById(id: string): void {
+    const t = this.templates().find(t => t.id === id);
+    if (!t) return;
+    if (!confirm(`Delete template "${t.name}"? This cannot be undone.`)) return;
+    this.svc.deleteTemplate(id);
+    this.templates.set(this.svc.loadTemplates());
+    this.toast('Template deleted.');
+  }
+
+  startRename(id: string): void {
+    const t = this.templates().find(t => t.id === id);
+    if (!t) return;
+    this.renamingId.set(id);
+    this.renameValue.set(t.name);
+  }
+
+  saveRename(): void {
+    const id = this.renamingId();
+    const name = this.renameValue().trim();
+    if (!id || !name) { this.renamingId.set(null); return; }
+    this.svc.renameTemplate(id, name);
+    this.templates.set(this.svc.loadTemplates());
+    this.renamingId.set(null);
+    this.toast('Template renamed.');
+  }
+
+  cancelRename(): void { this.renamingId.set(null); }
+
+  formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
   toast(msg: string, warn = false): void {
     this.toastMsg.set(msg);
     this.toastWarn.set(warn);
@@ -335,7 +363,6 @@ export class EventbuilderComponent implements OnInit, OnDestroy {
     this.toastTimer = setTimeout(() => this.toastMsg.set(''), 2800);
   }
 
-  // Template helpers
   getActiveSec(): SiteSection | undefined {
     const id = this.activeSec();
     return id ? this.getSec(id) : undefined;
