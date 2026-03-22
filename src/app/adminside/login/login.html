@@ -1,0 +1,123 @@
+<div class="login-shell">
+
+  <!-- Left panel: branding -->
+  <div class="login-brand">
+    <div class="brand-noise"></div>
+    <div class="brand-orb brand-orb-1"></div>
+    <div class="brand-orb brand-orb-2"></div>
+    <div class="brand-orb brand-orb-3"></div>
+
+    <div class="brand-content">
+      <div class="brand-seal">
+        <div class="seal-ring">
+          <div class="seal-core">
+            <span class="seal-initials">AR</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-wordmark">
+        <div class="wordmark-name">Arreglado</div>
+        <div class="wordmark-tagline">Barangay Event Management System</div>
+      </div>
+
+      <div class="brand-divider"></div>
+
+      <div class="brand-info">
+        <div class="brand-info-item">
+          <span class="brand-info-dot"></span>
+          <span>Barangay Pandacaqui</span>
+        </div>
+        <div class="brand-info-item">
+          <span class="brand-info-dot"></span>
+          <span>Mexico, Pampanga · Region III</span>
+        </div>
+        <div class="brand-info-item">
+          <span class="brand-info-dot"></span>
+          <span>Admin Portal · v1.0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      <span>© 2026 Barangay Pandacaqui. All rights reserved.</span>
+    </div>
+  </div>
+
+  <!-- Right panel: form -->
+  <div class="login-form-panel">
+    <div class="login-form-wrap">
+
+      <div class="form-header">
+        <div class="form-eyebrow">Admin Access Required</div>
+        <h1 class="form-title">Sign In</h1>
+        <p class="form-sub">Enter your credentials to access the admin dashboard.</p>
+      </div>
+
+      @if (error()) {
+        <div class="form-error" role="alert">
+          <span class="form-error-icon">⚠</span>
+          {{ error() }}
+        </div>
+      }
+
+      <div class="form-body">
+        <div class="fg">
+          <label class="fl" for="username">Username</label>
+          <div class="fi-wrap">
+            <span class="fi-icon">👤</span>
+            <input
+              id="username"
+              class="fi"
+              type="text"
+              [(ngModel)]="username"
+              placeholder="Enter username"
+              autocomplete="username"
+              (keydown)="onKeydown($event)"
+              [disabled]="loading()"
+            />
+          </div>
+        </div>
+
+        <div class="fg">
+          <label class="fl" for="password">Password</label>
+          <div class="fi-wrap">
+            <span class="fi-icon">🔒</span>
+            <input
+              id="password"
+              class="fi"
+              [type]="showPassword() ? 'text' : 'password'"
+              [(ngModel)]="password"
+              placeholder="Enter password"
+              autocomplete="current-password"
+              (keydown)="onKeydown($event)"
+              [disabled]="loading()"
+            />
+            <button class="fi-toggle" type="button" (click)="togglePassword()" tabindex="-1">
+              {{ showPassword() ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          class="btn-signin"
+          (click)="submit()"
+          [disabled]="loading()"
+          [class.loading]="loading()">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+            Signing in…
+          } @else {
+            Sign In to Dashboard
+          }
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <a href="/client/eventpage" class="form-footer-link">← View Public Event Page</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>

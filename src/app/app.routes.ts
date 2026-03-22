@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './shared/auth.guard';
+import { clientGuard } from './shared/client.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'client/eventpage', pathMatch: 'full' },
@@ -7,24 +9,33 @@ export const routes: Routes = [
   {
     path: 'admin',
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
+      {
+        path: 'login',
+        loadComponent: () =>
+          import('./adminside/login/login').then(m => m.LoginComponent),
+      },
       {
         path: 'dashboard',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./adminside/admindashboard/admindashboard').then(m => m.AdmindashboardComponent),
       },
       {
         path: 'calendar',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./adminside/calendar/calendar').then(m => m.CalendarComponent),
       },
       {
         path: 'eventbuilder',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./adminside/eventbuilder/eventbuilder').then(m => m.EventbuilderComponent),
       },
       {
         path: 'notifications',
+        canActivate: [authGuard],
         loadComponent: () =>
           import('./adminside/notifications/notifications').then(m => m.NotificationsComponent),
       },
@@ -34,6 +45,7 @@ export const routes: Routes = [
   // ── CLIENT (shared navbar wrapper) ────────────────────────────────────────
   {
     path: 'client',
+    canActivate: [clientGuard],
     loadComponent: () =>
       import('./clientside/layout/layout').then(m => m.ClientLayoutComponent),
     children: [
@@ -51,9 +63,10 @@ export const routes: Routes = [
     ],
   },
 
-  // Preview is standalone (no client navbar, used by admin)
+  // Preview is standalone (no client navbar, used by admin) — stays authenticated
   {
     path: 'client/preview',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./clientside/preview/preview').then(m => m.PreviewComponent),
   },

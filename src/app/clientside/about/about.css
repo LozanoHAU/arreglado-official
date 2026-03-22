@@ -15,7 +15,6 @@ app-about { display: contents; }
   --muted: #5C7063;
 }
 
-/* ── EYEBROW / SHARED ── */
 .au-eyebrow {
   font-family: 'Oswald', sans-serif;
   font-size: .65rem;
@@ -46,7 +45,6 @@ app-about { display: contents; }
   line-height: 1.7;
 }
 
-/* ── HERO ── */
 .au-hero {
   background: linear-gradient(135deg, #0d2215 0%, #1a4d26 45%, #245c30 100%);
   padding: 72px 40px 68px;
@@ -88,31 +86,13 @@ app-about { display: contents; }
   place-items: center;
   background: rgba(0,0,0,.2);
   box-shadow: 0 0 40px rgba(229,168,34,.15), inset 0 0 24px rgba(0,0,0,.2);
+  overflow: hidden;
 }
-.au-seal-core {
-  width: 82px; height: 82px;
+.au-seal-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(229,168,34,.25), rgba(44,122,59,.3));
-  border: 2px solid rgba(229,168,34,.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-.au-seal-text {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: .7rem;
-  color: rgba(255,255,255,.7);
-  letter-spacing: .15em;
-}
-.au-seal-num {
-  font-family: 'Oswald', sans-serif;
-  font-size: .68rem;
-  color: var(--gold);
-  font-weight: 600;
-  letter-spacing: .08em;
 }
 .au-hero-label {
   font-family: 'Oswald', sans-serif;
@@ -178,7 +158,6 @@ app-about { display: contents; }
   margin: 0 20px 0 4px;
 }
 
-/* ── ABOUT ── */
 .au-about {
   background: var(--surface);
   padding: 90px 40px;
@@ -223,14 +202,16 @@ app-about { display: contents; }
   color: var(--green);
   font-weight: 500;
 }
-/* image cards */
 .au-img-card {
   border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  overflow: hidden;
+  display: block;
+}
+.au-img-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .au-img-main {
   height: 180px;
@@ -242,10 +223,7 @@ app-about { display: contents; }
   gap: 10px;
 }
 .au-img-sm { height: 110px; }
-.au-img-placeholder-icon { font-size: 2.2rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,.2)); }
-.au-img-placeholder-lbl { font-family: 'Oswald', sans-serif; font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.55); }
 
-/* ── MISSION & VISION ── */
 .au-mv {
   background: var(--bg);
   padding: 70px 40px;
@@ -291,7 +269,6 @@ app-about { display: contents; }
   line-height: 1.82;
 }
 
-/* ── SERVICES ── */
 .au-services {
   background: var(--surface);
   padding: 90px 40px;
@@ -327,76 +304,9 @@ app-about { display: contents; }
 .au-svc-card p {
   font-size: .78rem;
   color: var(--muted);
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
-/* ── OFFICIALS ── */
-.au-officials {
-  background: var(--bg);
-  padding: 90px 40px;
-}
-.au-officials-inner { max-width: 1000px; margin: 0 auto; }
-.au-officials-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-.au-official-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  transition: all .17s;
-}
-.au-official-card:hover { border-color: var(--green); }
-.au-official-card.au-punong {
-  background: var(--green-dim);
-  border-color: rgba(44,122,59,.3);
-  grid-column: 1 / -1;
-  flex-direction: row;
-  text-align: left;
-  padding: 22px 26px;
-}
-.au-official-avatar {
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.au-punong .au-official-avatar {
-  width: 64px; height: 64px;
-  box-shadow: 0 4px 16px rgba(44,122,59,.3);
-}
-.au-official-initial {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: rgba(255,255,255,.9);
-}
-.au-punong .au-official-initial { color: #fff; font-size: 1.4rem; }
-.au-official-name {
-  font-family: 'Oswald', sans-serif;
-  font-size: .88rem;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: .02em;
-}
-.au-official-role {
-  font-size: .7rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  font-weight: 500;
-}
-.au-punong .au-official-role { color: var(--green); font-weight: 700; font-size: .72rem; }
-
-/* ── GALLERY ── */
 .au-gallery {
   background: var(--surface);
   padding: 80px 40px;
@@ -422,7 +332,6 @@ app-about { display: contents; }
 .au-gal-icon { font-size: 2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,.2)); }
 .au-gal-lbl { font-family: 'Oswald', sans-serif; font-size: .65rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.6); }
 
-/* ── HALL RENTAL ── */
 .au-hall {
   background: var(--bg);
   padding: 90px 40px;
@@ -483,7 +392,6 @@ app-about { display: contents; }
 }
 .au-hall-note p { margin: 0; }
 
-/* form card */
 .au-form-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -541,8 +449,9 @@ app-about { display: contents; }
 .au-btn-submit {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, var(--green), #1a4d24);
-  color: #fff;
+  background-color: #2C7A3B;
+  background-image: linear-gradient(135deg, #2C7A3B, #1a4d24);
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-family: 'Oswald', sans-serif;
@@ -554,6 +463,8 @@ app-about { display: contents; }
   transition: all .18s;
   margin-top: 6px;
   box-shadow: 0 4px 14px rgba(44,122,59,.25);
+  -webkit-appearance: none;
+  appearance: none;
 }
 .au-btn-submit:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
 .au-btn-submit:disabled { opacity: .65; cursor: not-allowed; }
@@ -571,7 +482,6 @@ app-about { display: contents; }
 }
 .au-btn-secondary:hover { border-color: var(--green); color: var(--green); }
 
-/* success state */
 .au-form-success {
   text-align: center;
   padding: 24px 16px;
@@ -589,7 +499,6 @@ app-about { display: contents; }
 .au-form-success p { font-size: .88rem; color: var(--muted); line-height: 1.7; }
 .au-form-success strong { color: var(--green); }
 
-/* ── FOOTER ── */
 .au-footer {
   background: #0d2215;
   padding: 44px 40px 0;
@@ -643,7 +552,6 @@ app-about { display: contents; }
   color: rgba(255,255,255,.2);
 }
 
-/* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .au-hero { padding: 56px 24px; }
   .au-hero-content { flex-direction: column; gap: 28px; }
@@ -651,16 +559,13 @@ app-about { display: contents; }
   .au-mv-inner { grid-template-columns: 1fr; }
   .au-mv-div { width: 100%; height: 1px; margin: 0 32px; }
   .au-services-grid { grid-template-columns: 1fr 1fr; }
-  .au-officials-grid { grid-template-columns: repeat(2, 1fr); }
-  .au-official-card.au-punong { flex-direction: column; text-align: center; }
   .au-gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
   .au-gal-lg { grid-row: auto; }
   .au-footer-inner { grid-template-columns: 1fr; gap: 24px; }
-  .au-hall, .au-about, .au-services, .au-officials, .au-gallery, .au-mv { padding: 60px 24px; }
+  .au-hall, .au-about, .au-services, .au-gallery, .au-mv { padding: 60px 24px; }
 }
 @media (max-width: 580px) {
   .au-services-grid { grid-template-columns: 1fr; }
-  .au-officials-grid { grid-template-columns: 1fr 1fr; }
   .au-fg-row { grid-template-columns: 1fr; }
   .au-hero-stats { flex-wrap: wrap; }
 }
