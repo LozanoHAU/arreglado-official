@@ -9,7 +9,7 @@ interface HallRentalForm {
   email: string;
   date: string;
   purpose: string;
-  guests: string | number; // ngModel on type="number" binds a number at runtime
+  guests: string | number;
   notes: string;
 }
 
@@ -62,10 +62,6 @@ export class AboutComponent {
     this.submitting.set(true);
     setTimeout(() => {
       try {
-        // Convert all field values to strings up front so the .trim() filter never
-        // receives a number (or null) from Angular's NumberValueAccessor on the
-        // guests input — previously this caused a silent TypeError that swallowed
-        // the entire submission.
         const toStr = (v: string | number | null | undefined): string =>
           v != null && v !== '' && !Number.isNaN(v) ? String(v) : '';
 
@@ -89,7 +85,7 @@ export class AboutComponent {
         const existing = JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || '[]');
         existing.unshift(submission);
         localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(existing));
-      } catch (e) { /* silent */ }
+      } catch (e) {}
       this.submitting.set(false);
       this.submitted.set(true);
     }, 600);

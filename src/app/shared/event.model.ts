@@ -1,13 +1,12 @@
-// ─── CALENDAR ────────────────────────────────────────────────────────────────
 export interface CalendarEvent {
   id: string;
   title: string;
   desc: string;
-  start: string; // 'YYYY-MM-DD'
-  end: string;   // 'YYYY-MM-DD'
-  color: string; // 'ev-blue' | 'ev-red' | 'ev-green' | 'ev-gold' | 'ev-purple' | 'ev-teal'
+  start: string;
+  end: string;
+  color: string;
   loc: string;
-  templateId?: string; // links to EventTemplate → drives the live eventpage
+  templateId?: string;
 }
 
 export interface CalDay {
@@ -15,7 +14,6 @@ export interface CalDay {
   otherMonth: boolean;
 }
 
-// ─── SITE BUILDER ────────────────────────────────────────────────────────────
 export interface FormField {
   id: string;
   type: 'text' | 'email' | 'phone' | 'number' | 'textarea' | 'select' | 'url';
@@ -47,18 +45,13 @@ export interface SiteData {
   theme: SiteTheme;
 }
 
-// ─── EVENT TEMPLATES ─────────────────────────────────────────────────────────
-// Saved from Event Builder via "Publish as Template".
-// Selected in the Calendar when creating/editing an event.
-// The live eventpage renders whichever template's CalendarEvent is active today.
 export interface EventTemplate {
   id: string;
   name: string;
-  createdAt: string; // ISO date string
+  createdAt: string;
   siteData: SiteData;
 }
 
-// ─── DASHBOARD ───────────────────────────────────────────────────────────────
 export interface RecentEvent {
   name: string;
   date: string;
@@ -66,7 +59,6 @@ export interface RecentEvent {
   color: string;
 }
 
-// ─── SECTION TYPE META ───────────────────────────────────────────────────────
 export interface SectionTypeMeta {
   label: string;
   icon: string;

@@ -2,7 +2,6 @@
 
 app-client-layout { display: contents; }
 
-/* ── TOPBAR ── */
 .cl-topbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -19,7 +18,6 @@ app-client-layout { display: contents; }
 
 .au-seal-logo { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-/* brand */
 .cl-brand {
   display: flex;
   align-items: center;
@@ -66,7 +64,6 @@ app-client-layout { display: contents; }
   letter-spacing: .03em;
 }
 
-/* nav links */
 .cl-nav-links {
   display: flex;
   align-items: center;
@@ -103,19 +100,16 @@ app-client-layout { display: contents; }
   line-height: 1;
 }
 
-/* body offset for fixed nav */
 .cl-body {
   padding-top: 62px;
   min-height: 100vh;
 }
 
-/* ── HIDE RENDERER NAVS (event page renders its own nav) ── */
 body.agency .a-nav,
 body.minimal .m-nav,
 body.bold .b-nav {
   display: none !important;
 }
-/* Compensate hero padding since external nav now handles the offset */
 body.agency .a-hero { padding-top: 80px !important; }
 body.minimal .m-hero { padding-top: 80px !important; }
 body.bold .b-hero { padding-top: 80px !important; }

@@ -371,7 +371,6 @@ html{scroll-behavior:smooth}
 [data-r]{opacity:0;transform:translateY(22px);transition:opacity .55s,transform .55s}
 [data-r].vis{opacity:1;transform:none}
 @keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-/* ── AGENCY ── */
 body.agency{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--text:#e2e2ee;--muted:rgba(226,226,238,.45);--border:rgba(255,255,255,.07);background:var(--bg);color:var(--text)}
 .a-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 6vw;height:62px;background:rgba(10,10,15,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
 .a-nav-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#fff}
@@ -434,7 +433,6 @@ label.a-cf-lbl{display:block;font-size:.72rem;font-weight:700;text-transform:upp
 .s-btn{width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;text-decoration:none;transition:all .15s;color:#fff}.s-btn:hover{background:rgba(124,106,255,.15);border-color:var(--c1)}
 .a-footer{background:var(--surface);border-top:1px solid var(--border);padding:18px 6vw;display:flex;align-items:center;justify-content:space-between}
 .a-footer span{font-size:.72rem;color:rgba(255,255,255,.2)}
-/* ── MINIMAL ── */
 body.minimal{background:#f8f5f0;color:#1a1a1a}
 .m-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 8vw;height:60px;background:rgba(248,245,240,.94);backdrop-filter:blur(10px);border-bottom:1px solid #e8e3db}
 .m-nav-brand{font-family:'Syne',sans-serif;font-weight:700;font-size:.98rem;color:#1a1a1a}
@@ -494,7 +492,6 @@ label.m-cf-lbl{display:block;font-size:.7rem;font-weight:700;text-transform:uppe
 .m-s-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.78rem;text-decoration:none;transition:all .15s;color:#fff}.m-s-btn:hover{background:var(--c1);border-color:var(--c1)}
 .m-footer{background:#111;padding:16px 8vw;display:flex;align-items:center;justify-content:space-between}
 .m-footer span{font-size:.7rem;color:#333}
-/* ── BOLD ── */
 body.bold{background:#080005;color:#fff}
 .b-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;height:58px;background:#080005;border-bottom:2px solid var(--c1)}
 .b-nav-brand{font-family:'Syne',sans-serif;font-weight:900;font-size:1rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c1)}

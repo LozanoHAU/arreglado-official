@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
-/* ── COMING SOON PAGE ── */
 .cs-page {
   min-height: 100vh;
   display: flex;
@@ -13,7 +12,6 @@
   padding: 40px 24px;
 }
 
-/* decorative orbs */
 .cs-orb {
   position: absolute;
   border-radius: 50%;
@@ -41,7 +39,6 @@
   max-width: 580px;
 }
 
-/* status badge */
 .cs-badge {
   display: inline-flex;
   align-items: center;
@@ -99,7 +96,6 @@
   margin: 0;
 }
 
-/* next event card */
 .cs-next {
   margin-top: 8px;
   background: rgba(255, 255, 255, 0.04);
@@ -142,7 +138,6 @@
   line-height: 1.5;
 }
 
-/* footer */
 .cs-footer {
   display: flex;
   align-items: center;

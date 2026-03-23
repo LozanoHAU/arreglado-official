@@ -35,8 +35,6 @@ export function defaultData(type: string): Record<string, any> {
   }
 }
 
-
-
 const DEFAULT_SITE: SiteData = {
   layout: 'agency',
   sections: [
@@ -64,7 +62,7 @@ export class EventService {
         if (!d.theme) d.theme = { primary: '#3d9e52', secondary: '#d4a017', customCss: '' };
         return d;
       }
-    } catch { /* ignore */ }
+    } catch {}
     return JSON.parse(JSON.stringify(DEFAULT_SITE)) as SiteData;
   }
 
@@ -106,7 +104,7 @@ export class EventService {
     try {
       const raw = localStorage.getItem(CAL_KEY);
       if (raw) return JSON.parse(raw);
-    } catch { /* ignore */ }
+    } catch {}
     return [];
   }
 

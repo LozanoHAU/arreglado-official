@@ -1,11 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap');
 
-/* Theme wrapper inherits --c1, --c2 from ngStyle */
 .client-theme {
   min-height: 100%;
 }
 
-/* Layout-specific variables (mirror site-renderer) */
 .client-theme.agency {
   --bg: #0a0a0f;
   --surface: #111118;
@@ -36,7 +34,6 @@
   color: var(--text);
 }
 
-/* Base nav */
 .client-nav {
   position: fixed;
   top: 0;
@@ -51,7 +48,6 @@
   font-family: 'Syne', sans-serif;
 }
 
-/* Agency: dark nav */
 .client-theme.agency .client-nav {
   background: rgba(10, 10, 15, 0.92);
   backdrop-filter: blur(14px);
@@ -71,7 +67,6 @@
   color: #fff;
 }
 
-/* Minimal: light nav */
 .client-theme.minimal .client-nav {
   background: rgba(248, 245, 240, 0.94);
   backdrop-filter: blur(10px);
@@ -91,7 +86,6 @@
   color: #1a1a1a;
 }
 
-/* Bold: dark with accent */
 .client-theme.bold .client-nav {
   background: #080005;
   border-bottom: 2px solid var(--c1);
@@ -117,7 +111,6 @@
   color: var(--c1);
 }
 
-/* Shared nav elements */
 .client-nav-brand {
   font-weight: 800;
   font-size: 1rem;

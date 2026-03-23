@@ -21,7 +21,6 @@ export class EventpageComponent implements OnInit, OnDestroy {
   nextEvent = signal<CalendarEvent | null>(null);
 
   ngOnInit(): void {
-    // Resolve whichever calendar event is currently active (today between start/end + has template)
     const data: SiteData | null = this.svc.getActiveEventData();
 
     if (data && data.sections.length > 0) {
@@ -32,7 +31,6 @@ export class EventpageComponent implements OnInit, OnDestroy {
       this.html.set(this.sanitizer.bypassSecurityTrustHtml(bodyHtml));
       this.initScrollReveal();
     } else {
-      // Show coming-soon screen; surface the next upcoming event if available
       this.nextEvent.set(this.svc.getNextUpcomingEvent());
     }
   }
@@ -42,7 +40,6 @@ export class EventpageComponent implements OnInit, OnDestroy {
     document.body.className = '';
   }
 
-  /** Human-readable date range for the next upcoming event. */
   nextEventDateStr(): string {
     const ev = this.nextEvent();
     if (!ev) return '';

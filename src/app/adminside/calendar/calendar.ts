@@ -219,7 +219,6 @@ export class CalendarComponent implements OnInit {
 
   closeModal(): void { this.showModal.set(false); }
 
-  /** When a template is selected, auto-fill the title from its name if title is empty. */
   onTemplateSelect(id: string): void {
     this.evTemplateId.set(id);
     if (id && !this.evTitle().trim()) {

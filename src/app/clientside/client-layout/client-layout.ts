@@ -23,7 +23,6 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Resolve initial theme from active event or draft
     const data = this.eventService.getActiveEventData() ?? this.eventService.loadSiteData();
     this.themeService.setFromSiteData(data);
   }
