@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist/arreglado_official/browser"
+  functions = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/angular-runtime"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
